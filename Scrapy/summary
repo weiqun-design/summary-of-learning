@@ -1,0 +1,27 @@
+1. startproject
+Syntax: scrapy startproject <project_name> [project_dir]
+Requires project: no
+Creates a new Scrapy project named project_name, under the project_dir directory.
+If project_dir wasn’t specified, project_dir will be the same as project_name.
+
+2. crawl
+Syntax: scrapy crawl <spider>
+Requires project: yes
+Start crawling using a spider
+
+3. check
+Syntax: scrapy check [-l] <spider>
+Requires project: yes
+Run contract checks.
+
+4. fetch
+Syntax: scrapy fetch <url>
+Requires project: no
+Downloads the given URL using the Scrapy downloader and writes the contents to standard output.
+
+5. view
+Syntax: scrapy view <url>
+Requires project: no
+Opens the given URL in a browser, as your Scrapy spider would “see” it.
+Sometimes spiders see pages differently from regular users,
+so this can be used to check what the spider “sees” and confirm it’s what you expect.

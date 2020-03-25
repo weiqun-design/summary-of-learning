@@ -1,0 +1,271 @@
+1. JavaScript能够改变HTML内容，getElementById()是多个JavaScript HTML方法之一。
+document.getElementById("demo").innerHTML = "Hello JavaScript";
+<!DOCTYPE html>
+<html>
+<body>
+<h2>JavaScript 能做什么</h2>
+<p id="demo">JavaScript 能够改变HTML内容。<p>
+<button type="button" onclick='document.getElementById("demo").innerHTML="Hello Javascript!"'>点击我！</button>
+</body>
+</html>
+2. JavaScript同时接受双引号和单引号
+3. JavaScript能够该拜年HTML属性
+<html>
+<body>
+<h2>JavaScript 能做什么？</h2>
+<p>JavaScript 能够改变HTML属性值。</p>
+<button onclick="documnet.getElementById('myImage').src('/i/eg_bulbon.gif'"></button>
+<img id="myImage" border="0" src="/i/eg_bulboff.gif" style="text-align:center;">
+<button onclick="document.getElementById('myImage').src='/i/eg_bulboff.gif'">关灯</button>
+</html>
+
+4. JavaScript能够隐藏HTML元素
+document.getElementById("demo").style.display="none"
+5. JavaScript能够显示HTML元素
+document.getElementById("demo").style.display="block"
+6. <script>标签 在HTML中，JavaScript代码必须位于<script>与</script>标签之间。
+7. JavaScript函数是一种JavaScript代码块，它可以在调用时被执行。
+8. 可以在<head>或<body>中的JavaScript
+9. 脚本可放置于外部文件中 myScript.js
+<script src='myScript.js'></script>
+10. 外部JavaScript的优势：分离了HTML和代码，使HTML和JavaScript更易于阅读和维护,已缓存的JavaScript文件可加速页面加载
+11. src链接地址可使用绝对路径或相对路径
+12. JavaScript显示方案 JavaScript能够以不同方式显示数据：
+    使用window.alert()写入警告框
+    使用document.write()写入HTML输出
+    使用innerHTML 写入HTML元素
+    使用console.log() 写入浏览器控制台
+13. 如需访问HTML元素，JavaScript可使用document.getElementById(id)方法。id属性定义HTML元素
+14. 出于测试目的，使用document.write()比较方便
+15. 使用window.alert()您能够使用警告框来显示数据
+16. 在HTML中，JavaScript语句是由web浏览器执行的指令
+17. 如果JavaScript语句太长，对其进行折行的最佳位置是某个运算符：
+18. JavaScript代码块，用{}组合
+19. JavaScript关键词
+    break              终止switch或循环
+    continue           跳出循环并在顶端开始
+    debugger           停止执行javascript，并调用调试函数
+    do ... while       执行语句块，并在条件为真时重复代码块
+    for                标记需被执行的语句块，只要条件为真
+    function           声明函数
+    if ... else        标记需被执行的语句块，根据某个条件
+    return             退出函数
+    switch             标记需被执行的语句块，根据不同的情况
+    try ... catch      对语句块实现错误处理
+    var                声明变量
+20. JavaScript使用var关键词来声明变量
+21. 使用+ - * / 来计算值
+22. 使用 = 向变量赋值
+23. 双斜杠//或/*与*/之间的代码被视为注释
+24. 在JavaScript中，标识符用于命名变量，在JavaScript中，首字符必须是字母、下划线或美元符号。
+25. 连串的字符可以是字母、数字、下划线或美元符号
+26. JavaScript程序员倾向于使用以小写字母开头的驼峰大小写。
+27. JavaScript使用Unicode字符集，Unicode覆盖世界上几乎所有的字符、标点和符号。
+28. 当行注释以//开头，多行注释以/*开头，以*/结尾。
+29. 可以在一条语句中声明许多变量
+var person = "Bill Gates", carName = "porsche", price = 15000;
+30. 不带有值的变量，它的值将是undefined
+31. 重复声明JavaScript变量, 不会丢它的值
+32. 算术运算符  + - * / % ++ -- **
+33. 赋值运算符 = += -= *= /= %=
+34. + 运算符也可用于对字符串进行相加
+35. 比较运算符
+==   等于
+===  等值等型
+!=   不相等
+!==  不等职或不等型
+>    大于
+<    小于
+>=   大于或等于
+<=   小于或等于
+？   三元运算符
+36. 逻辑运算符        &&与   ||或   !非
+37. typeof     返回变量的类型
+38. instanceof 返回true,如果对象是对象类型的实例
+39. JavaScript位运算符
+&   与
+|   或
+～  非
+^   异或
+<<  零填充左位移
+>>  有符号右位移
+>>> 零填充右位移
+40. JavaScript变量能够保存多种数据类型：数值、字符串值、数组、对象
+41. JavaScript拥有动态类型。这意味着相同变量可用作不同类型
+42. 布尔值 true或false
+43. JavaScript数组用方括号书写
+44. JavaScript对象用花括号来书写
+45. 没有值的变量，其值是undefined，typeof也返回undefined
+46. ""类型为string   null类型为对象
+47. 原始数据值是一种没有额外属性和方法的单一简单数据值，type运算符可返回以下原始类型之一：string，number，boolean，undefined
+48. JavaScript函数是被设计为执行特定任务的代码块，JavaScript函数会在某代码调用它时被执行。
+49. 函数调用，函数中的代码将在其他代码调用该函数时执行：
+    当事件发生时（当用户点击按钮时）
+    当JavaScript代码调用时
+    自动的（自调用）
+50. 定义对象型变量，var car = {type:"porsche", model:"991", color:"white"};
+51. var person = {
+        firstName:"Bill",
+        lastName:"Gates",
+        id: 678,
+        fullName:function(){
+            return this.firstName + "" + this.lastName;
+        }
+};
+52. 在函数定义中，this引用该函数的拥有值。
+53. 可以以两种方式访问属性 objectName.propertyName 或者 objectName['propertyName']
+54. 访问对象方法  objectName.methodName()
+55. var x = new String(); var y = new Number(); var z = new Boolean(); 应尽量避免字符串、数值或逻辑对象，他们会增加代码的复杂度并降低执行速度。
+56. 常见的HTML事件
+onchange        HTML元素已被改变
+onclick         用户点击了HTML元素
+onmouseover     用户把鼠标移动到HTML元素上
+onmouseout      用户把鼠标移开HTML元素
+onkeydown       用户按下键盘按键
+onload          浏览器已经完成页面加载
+57. JavaScript能够做什么？
+事件处理程序可用于处理、验证用户输入、用户动作和浏览器动作：
+每当页面加载时应该做的事情
+当页面被关闭时应该做的事情
+当用户点击按钮时应该被执行的动作
+当用户输入数据时应该被验证的内容
+等等
+58. 内建属性length可返回字符串的长度
+57. \转义字符   \'  \"  \\
+58. \b退格键   \f换页   \n新行  \r回车   \t水平制表符   \v垂直制表符
+59. 换行的最佳位置是某个运算符之后，也可以在字符串中换行，通过一个反斜杠即可，但\不是ECMAScript标准，用 + 更安全，但有点慢。
+60. 字符串可以是对象
+61. 一般不使用new的方式创建对象，它会拖慢执行速度
+62. indexof()方法返回字符串中指定文本首次出现的索引（位置）, 如果未找到，返回-1
+63. lastIndexof()方法返回指定文本在字符串中最后一次出现的索引，如果未找到，返回-1
+64. search()方法搜索特定值的字符串，并返回匹配的位置
+65. search()方法无法设置第二个开始位置参数，indexOf() 方法无法设置更强大的搜索值（正则表达式）
+66. 提取部分字符串
+    slice(start, end)
+    substring(start, end)
+    substr(start, length)
+67. slice()方法提取字符串的某个部分并在新字符串总返回被提取的部分，该方法设置两个参数：起始索引（开始位置），终止索引（结束位置）。
+如果省略第二个参数，则该方法将裁剪字符串的剩余部分。
+68. substring()类似于slice(),但substring()无法接受负的索引。
+69. substr()类似于slice(), 但第二个参数规定被提取部分的长度。
+70. replace()方法用另一个值替换在字符串中指定的值
+71. 如需执行大小写不敏感的替换，请使用正则表达式/i(大小写不敏感)：
+str = 'Please visit Microsoft!'
+var n = str.replace(/MICROSOFT/i, "W3School");
+72. 正则表达式不带引号
+str = "Please visit Microsoft and Microsoft!";
+var n = str.replace(/Microsoft/g, "W3School");
+73. toUpperCase() 把字符串转换为大写
+74. toLowerCase() 把字符串转换为小写
+75. concat()连接两个或多个字符串
+76. string.trim()方法删除字符串两端的空白符，ie8或更低版本不支持trim()方法
+77. 提取字符串字符 charAt(position)   charCodeAt(position)
+78. charAt()方法返回字符串中指定下标的字符串
+79. charCodeAt()方法返回字符串中指定索引的字符unicode编码
+80. 属性访问 str[0] 有些不太靠谱：
+    不适用 Internet Explorer 7 或更早的版本
+    它让字符串看起来像是数组（其实并不是）
+    如果找不到字符，[ ] 返回 undefined，而 charAt() 返回空字符串。
+    它是只读的。str[0] = "A" 不会产生错误（但也不会工作！）
+81. split()将字符串转换为数组
+    var txt = "a, b, c, d, e"
+    txt.split(",")
+82. JavaScript数值始终是64位浮点数，整数（不使用指数或科学计数法）会被精确到15位。
+83. 小数的最大数是17位，但是浮点的算数并不总是100%精准
+84. NaN非数值，属于JavaScript保留词，指示某个数不是合法数。类型为number
+85. Infinity（或-Infinity）是JavaScript在计算数时超出最大可能数范围时返回的值,类型是number
+86. toString()方法，以字符串返回数值
+87. toExponential()方法返回字符串值，它包含已被四舍五入并使用指数计数法的数字
+88. toFixed()方法返回字符串值，它包含了指定位数小数的数字
+var x = 9.656
+x.toFixed(0)   返回10
+x.toFixed(4)   返回9.6560
+89. toPrecision()返回字符串值，它包含了指定长度的数字
+var x = 9.656;
+x.toPrecision(); 返回9.656
+x.toPrecision(2); 返回9.7
+x.toPrecision(4); 返回9.656
+x.toPrecision(6); 返回9.65600
+
+90. valueOf()以数值返回数值
+91. 这三种JavaScript方法可用于将变量转换为数字：
+    Number()方法  返回数字，由其参数转换而来
+    parseInt()方法  返回浮点数
+    parseFloat()方法  解析参数，返回整数
+92. Number()可用于将JavaScript变量转换为数值
+    x = true;
+    Number(x);        // 返回 1
+    x = false;
+    Number(x);        // 返回 0
+    x = new Date();
+    Number(x);        // 返回 1404568027739
+    x = "10"
+    Number(x);        // 返回 10
+    x = "10 20"
+    Number(x);        // 返回 NaN
+
+93. 数值属性
+MAX_VALUE      返回javaScript中可能的最大数
+MIN_VALUE      返回JavaScript中可能的最小数
+NEGATIVE_INFINITY    表示负的无穷大（溢出返回）
+NaN            表示非数字值（"Not a Number"）
+POSITIVE_INFINITY   表示无穷大
+
+94. 数值属性不可用于变量
+95. 对数组使用typeof运算符会返回object
+96. 访问第一个数组元素   fruits = ["Banana", "Orange", "Apple", "Mango"];   var first = fruits[0];
+97. 访问最后一个数组元素  fruits = ["Banana", "Orange", "Apple", "Mango"];  var last = fruits[fruits.lenght - 1]
+98. Array.foreach()函数，可以遍历数组
+99. 添加数组元素 push()方法, 也可以使用lenght属性添加fruits[fruits.length] = "Lemon"，
+添加最高索引的元素可在数组中创建未定义的洞
+var fruits = ["Banana", "Orange", "Apple", "Mango"];
+fruits[6] = "Lemon";
+100. JavaScript不支持命名索引的数组
+101. 数组和对象的区别
+在JavaScript中，数组使用数字索引
+在JavaScript中，对象使用命名索引
+数组是特殊类型的对象，具有数字索引
+102. toString() 把数组转换为数组值（逗号分隔）的字符串
+var fruits = ["Banana", "Orange", "Apple", "Mango"];
+document.getElementById("demo").innerHTML = fruits.toString();
+会返回Banana,Orange,Apple,Mango
+103. join()方法也可将所有数组元素结合为一个字符串
+var fruits = ["Banana", "Orange","Apple", "Mango"];
+document.getElementById("demo").innerHTML = fruits.join(" * ");
+Banana * Orange * Apple * Mango
+
+104. Popping和Pushing
+在处理数组时，删除元素和添加新元素是很简单的
+Popping和Pushing，从数组弹出item或推入item
+pop() 方法从数组中删除最后一个元素
+pushing（） 方法向数组添加一个新的元素
+
+105.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

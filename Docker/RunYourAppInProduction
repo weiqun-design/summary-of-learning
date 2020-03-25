@@ -1,0 +1,106 @@
+启动docker swarm
+
+1. 初始化docker swarm
+docker swarm init
+2. 运行docker service
+docker service create --name demo alpine:3.5 ping 8.8.8.8
+3. 检查service创建来一个容器
+docker service ps demo
+4. 查看日志
+docker service logs demo
+5. 关闭服务
+docker service rm demo
+
+
+Deploy to Swarm
+swarm从来不会创建独立的容器，swarm工作负载以服务形式存在，所有的swarm对象都有stack files描述，stack files为yaml文件。
+简单的stack文件bb-stack.yaml如下：
+version: '3.7'
+
+services:
+  bb-app:
+    image: bulletinboard:1.0
+    ports:
+      - "8000:8080"
+
+在集群中发布服务
+docker stack deploy -c bb-stack.yaml demo
+查看service情况
+docker service ls
+
+
+Docker object labels
+labels是docker元数据应用的机制，包括以下几种
+Images
+Containers
+Local daemons
+Volumes
+Networks
+Swarm nodes
+Swarm services
+
+label key可以为字母、数字、下划线和.
+label value 可以包含任意数据类型（转化为string类型），包括json，XML，CSV，YAML
+
+清理无用的docker object
+docker system prune可以清除多种类型的object
+
+
+--format可以指定docker 命令返回值格式
+
+
+containers设置
+docker提供了重启策略，来控制当容器退出或重启。重启策略可以保证关联的容器可以按照正确的顺序启动。docker推荐使用restart policies。
+在执行docker run命令时指定--restart 参数
+--restart    no       为默认值，不自动重启容器，
+             on-failure  如果因为error导致的容器退出，会重启
+             always   当容器停止就会重启；如果是人为导致的，只有当守护进程重启的时候或者人工命令容器重启的才进行重启
+             unless-stopped  和always类似，除了当容器停止的时候（人为或其他因素导致），即使守护进程重启，也不会重启
+docker run -dit --restart unless-stopped redis
+
+只有当container启动成功，restart policy才会生效。手动停止container时，restart policy会被忽略，除非docker守护进程重启，
+或者人为手动重启。--restart重启策略只应用于容器。应用于集群的重启策略使用其他方式配置。
+
+在守护进程down的情况下保持容器alive
+默认情况下，当docker守护进程结束的时候，会结束正在运行的容器。在docker engine1.12开始，可以设置守护进程以使即使守护进程不可用，容器依然
+保持运行状态，此功能被称为现场还原。此功能可以减少容器由于守护进程崩溃，计划内停机或升级引起的容器停机时间。
+windows环境下创建的容器不支持Live restore功能，但是linux容器在windows运行是可以使用live restore功能的。
+有两种方式来实现live restore：
+
+第一种方式：
+在守护进程设置文件中添加内容，linux环境下，默认地址为/etc/docker/daemon.json。
+{
+  "live-restore": true
+}
+然后重启docker daemon，使用systemctl reload docker
+
+第二种方式：
+执行dockerd进程时，带着--live-restore标签
+
+--live-restore标签进对单独的容器起作用，对于集群服务无作用。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

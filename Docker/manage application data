@@ -1,0 +1,104 @@
+storage overview
+有两种方式可以让容器在宿主机上保存文件，volumes或bind mounts。
+volumes是最好的持久化数据方式，volumes是主机文件系统的一部分，由docker管理。
+bind mounts可以存储在主机任何位置，非docker 程序或docker容器都可以随时修改此文件。
+
+volume 可以是命名的，也可以是匿名的，未命名的volumes会被docker给一个随机名字，volume同时支持使用volumes drivers,可以将
+数据存储到远程主机或者云设备。
+bind mounts 在docker早期使用，相比与volume有一定的功能局限。如果要开发新的docker应用，考虑使用命名的volumes，不能通过
+docker CLI命令来直接管理bind mounts
+
+使用volumes的好处：
+多个容器可以同时安装相同的volume，volumes只有被显性删除的时候才会被删除。
+可以帮忙在主机和容器之间解藕。
+可以在远端或云设备上存储容器中的数据。
+可以方便备份数据，可以停掉正在使用volume的容器，然后备份volume中的数据。
+
+当指定的空的volume在容器的路径已经有其他文件或目录时，这些文件或目录会被复制进volume。
+当安装非空的volume在容器中的路径已经有其他文件或目录时，这些文件或目录会被隐藏。
+
+
+Volumes
+
+volumes相比于bind mounts有很多优势：
+volumes更容易备份和迁移。
+可以使用docker cli命令或者docker api来管理volumes。
+volumes在linux和windows都可以使用。
+volumes可以安全地在多个容器间共享。
+volume drivers可以将数据存储早云端、加密、或增加其他功能。
+
+此外，使用volumes相比于在容器写入层持久化数据更好，因为volume不会增加容器的尺寸。
+
+-v或者--volume被用于单独的容器，--mount用于集群服务，17.06版本以后，也可以使用--mount来处理单独的容器。
+一般来说，可以--mount更加显性
+-v语法将所有设置项放在一起，--mount将设置项分开。新手应该尝试使用--mount语法，因为相比于--volume更加简单。
+如果需要指定volume driver，就必须使用--mount
+
+-v 参数由三个部分组成，使用:分隔，对于指定名称的volumes，第一个参数为name，对于匿名volumes，第一个参数可以省略，
+第二个参数为volume在container中的位置，第三个参数为可选参数，使用逗号分隔。
+--mount参数，由许多键值对组成，使用逗号分隔， type可以为bind，volume或者tmpfs，source为volume的名字，destination为容器中的路径，
+readly 选项代表四否为只读，volume-opt可以为可选参数的key和value
+
+注意volume-opt内容的转义，以及使用 o 参数
+docker service create \
+    --mount 'type=volume,src=<VOLUME-NAME>,dst=<CONTAINER-PATH>,volume-driver=local,volume-opt=type=nfs,volume-opt=device=<nfs-server>:<nfs-path>,"volume-opt=o=addr=<nfs-address>,vers=4,soft,timeo=180,bg,tcp,rw"'
+    --name myservice \
+    <IMAGE>
+
+创建volumes
+docker volume create my-vol
+展示所有volumes
+docker volume ls
+检查volume
+docker volume inspect my-vol
+删除volume
+docker volume rm my-vol
+
+包含volume启动容器
+docker run -d --name devtest --mount source=myvol2, target=/app  nginx:latest
+使用docker inspect devtest来检查volume是否已经创建成功。
+删除volume
+docker container stop devtest
+docker container rm devtest
+docker volume rm myvol2
+
+包含volume启动service
+当启动service并且定义volume时，每个service容器使用各自的volume。
+使用local volume driver时，容器间不共享数据，Docker for AWS and Docker for Azure both support persistent storage using the Cloudstor plugin.
+docker service create -d --replicas=4  --name devtest-service --mount source=myvol2, target=/app  nginx:latest
+使用docker service ps devtest-service来检查服务是否在运行
+删除服务并不会删除volumes
+
+创建只读的volume
+docker run -d \
+--name=nginxtest \
+--mount source=nginx-vol,destination=/usr/share/nginx/html,readonly \
+nginx:latest
+
+机器间共享数据
+当构建容错性较高的应用时，同一服务可能需要设置多个备份，每个服务都会使用同一个文件。
+有多种方式实现这一目标，一种时将文件存储在云平台上，另一种是创建volumes，driver支持外部存储系统，NFS或Amazon S3
+
+使用volume driver，如vieux/sshfs
+安装vieux/sshfs，在host机器上执行
+docker plugin install --grant-all-permissions vieus/sshfs
+创建volume
+docker volume create --driver vieux/sshfs -o sshcmd=test@node2:/home/test -o password=testpassword sshvolume
+启动容器
+docker run -d --name sshfs-container --volume-driver vieux/sshfs  --mount src=sshvolume,target=/app, volume-opt=sshcmd=test@node2:/home/test, volume-opt=password=testpassword \
+nginx: latest
+
+创建一个使用NFS volume的service
+docker service create -d \
+    --name nfs-service \
+    --mount 'type=volume,source=nfsvolume,target=/app,volume-driver=local,volume-opt=type=nfs,volume-opt=device=:/,"volume-opt=o=10.0.0.10,rw,nfsvers=4,async"' \
+    nginx:latest
+
+
+
+
+
+
+
+
+

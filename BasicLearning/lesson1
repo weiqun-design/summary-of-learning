@@ -1,0 +1,79 @@
+1. git安装地址https://git-scm.com/downloads
+2. 安装完毕后，设置git的全局参数
+    git config --global user.name "Name"
+    git config --global user.email "email"
+3. 创建一个本地git库
+    mkdir dir-name
+    cd dir-name
+    git init
+4. 本地仓库与远程仓库关联
+    git remote add origin git@server-name：path/repo-name.git
+    git push -u origin master  (第一次)
+    git push
+    git pull
+5. 增删改
+    git add file
+    git commit -m "description"
+6. 查
+    git status 查看仓库状态
+    git diff file  查看文件修改内容，若无file则显示全部修改
+7. git checkout --filename  撤销
+8. 代码回退 git log（--pretty=online)  查看提交日志和commit id
+9. git reset --hard HEAD  回退到第一个提交
+10. git reset --hard commitID  回退到该commitID前的全部提交
+11. git reflog 回退的回退
+12. git commit -a --amend 改了又改
+13. git checkout -b branch_name 创建并切换分支
+14. git branch  查看当前分支
+15. git checkout branch  切换分支
+16. git merge branch_name  合并分支
+17. git branch -d branch_name  删除分支
+18. git remote -v  查看远程仓库
+19. git branch -r  查看远程分支
+20. git checkout -b remote_branch_name origin/remote_branch_name  从本地拉去远程分支
+
+21. 向master合并分支
+    git checkout master
+    git pull origin master
+    git merge dev
+    git status
+    git push origin master
+
+22. 代码写在错误的分支
+    git stash
+    git checkout targetbranch
+    git stash pop
+    git add .
+    git commit -m xxx
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,190 @@
+1. hadoop最早起源与Nutch。Nutch的设计目标是构建一个大型的全网搜索引擎，
+包括网页抓取、索引、查询等功能。遇到可拓展性问题。
+2. 2003、2004谷歌发表的两篇论文提供了可行的解决方案。
+    分布式文件系统（GFS），可用于处理海量网页存储问题
+    分布式计算框架MAPREDUCE，可用于处理海量网页的索引计算问题
+3. 从狭义上来说，hadoop就是单独指代hadoop这个软件
+   从广义上来说，hadoop指代大数据的一个生态圈，包括很多其他的软件
+4. 大数据hadoop生态圈，druid、flink、zookeeper、shark、hue、oozie、elasticsearch
+   solr、phoenix、hadoop、hive、hbase、flume、storm、sqoop、kafka、spark、impala
+5. hadoop 0.x系列是最早的开源版本
+6. hadoop 1.x系列主要是修复0.x中的一些bug
+7. hadoop 2.x系列引入了yarn平台，是现在生产环境中使用最多的版本
+8. hadoop 3.x系列引入了hdfs的新特性，已发展了稳定版本，是未来公司的使用趋势
+9. hadoop三大发行版本 apache、cloudera、hortonworks
+其中apache版本最原始，对于入门学习最好，cloudera在大型互联网企业中用的较多，hortonworks文档较好。
+官网地址：http://hadoop.apache.org/releases.html
+下载地址：https://archive.apache.org/dist/hadoop/common/
+Cloudera Hadoop
+官网地址：https://www.cloudera.com/downloads/cdh/5-10-0.html
+下载地址：http://archive-primary.cloudera.com/cdh5/cdh/5/
+Hortonworks Hadoop
+官网地址：https://hortonworks.com/products/data-center/hdp/
+下载地址：https://hortonworks.com/downloads/#data-platform
+10. hadoop集群架构体系：包含分布式文件存储系统HDFS，资源管理调度系统yarn
+11. HDFS模块：namenode：主节点，主要负责集群的管理以及元数据信息管理
+             datanode：从节点，主要负责存储用户数据
+             secondaryNameNode：辅助namenode管理元数据信息，以及元数据信息冷备份
+12. yarn模块：resourceManager: 主节点，主要负责资源分配
+             NodeManager：从节点，主要负责执行任务
+13. HDFS文件系统，硬盘容量来自各个服务器硬盘容量之和
+14. HDFS优点：1. 高容错性：
+                数据自动保存多个副本。通过增加副本的形式，提高容错性
+                某一个副本丢失以后，它可以自动恢复
+              2. 适合处理大数据
+                 数据规模：能够处理数据规模达到GB、TB、甚至PB级别的数据
+                 文件规模：能够处理百万规模以上的文件数量，数量相当之大
+              3. 可构建在廉价机器上，通过多副本机制，提高可靠性。
+15. 缺点：不适合低延迟数据访问，比如毫秒级的存储数据，是做不到的
+         无法高效的对大量小文件进行存储
+         不支持并发写入、文件随机修改
+         仅支持数据追加
+16. 小文件的存储的寻址时间会超过读取时间，它违反了HDFS设计目标
+17. 在hadoop中数据以block块的形式统一存储管理，每个block块128M
+18. 如果有一个文件大小为1KB，也是要占用一个block块，但是实际占用磁盘空间还是1KB大小。
+19. 每个block块的元数据大小大概为150字节
+20. NameNode负责管理整个文件系统的元数据，以及每一个路径（文件）所对应的数据块信息。
+21. DataNode负责管理用户的文件数据块，每一个数据块都可以在多个datanode上存储多个副本
+22. Secondary NameNode用来监控HDFS状态的辅助后台程序，每隔一段时间获取HDFS元数据的快照
+    主要是负责辅助namenode管理元数据信息
+23. NameNode元数据保存在内存中
+24. HDFS命令有两种风格：hadoop fs开头的 hdfs dfs开头的
+25. hdfs dfs -ls /   查看制定目录文件列表
+26. hdfs dfs -touchz /edits.txt   创建文件
+27. hdfs dfs -appendToFile /edit1.txt /edits.txt 将本地文件内容追加到hdfs文件中
+28. hdfs dfs -cat /edit  查看HDFS文件内容
+29. hdfs dfs -put /edits  /    将本地文件复制一份传入HDFS
+30. hdfs dfs -copyFromLocal /edits / 同put将本地文件复制一份传入HDFS
+31. hdfs dfs -moveFromLocal /edits / 将本地文件复制一份传入HDFS，并删除原文件
+32. hdfs dfs -get /hdfs地址  /本地地址  将HDFS文件copy到本地
+33. hdfs dfs -copyToLocal  /hdfs地址 /本地地址  将HDFS文件copy到本地
+34. hdfs dfs -mkdir /shell  在hdfs文件系统中创建目录
+35. hdfs dfs -rm /edits.txt 在hdfs文件系统中删除文件
+36. hdfs dfs -rm -r /shell  在hdfs文件系统中删除目录
+37. hdfs dfs -mv /edit1.txt /edit01.txt 在hdfs文件系统中剪切
+38. hdfs dfs -cp /edit01.txt /edit1.txt 在hdfs文件系统中复制文件
+39. hdfs dfs -ls file:///home/hadoop/
+40. hdfs dfs -find /shell -name edit1.txt  在hdfs文件系统中查找文件
+41. hdfs dfs 查看所有命令
+42. hdfs的安全模式是HDFS所处的一种特殊状态，在这种状态下，文件系统只接受读数据请求，而不接受删除、修改等变更请求
+    hdfs启动时，默认30s是安全期，过了30s之后，集群脱离了安全期，然后才可以对集群进行操作。
+43. HDFS分布式文件系统也是一个主从架构，主节点是我们的namenode，负责管理整个集群以及维护集群的元数据信息。
+44. 从节点datanode，主要负责文件数据存储
+45. hdfs将所有的文件全部抽象成为block块来进行存储。hadoop1中block块的默认大小为64M，
+    hadoop2中block块的默认大小为128M。block块的大小可以通过hdfs-site.xml当中的配置文件进行指定。单位为字节。
+46. 抽象成数据块的好处
+    1. 一个文件有可能大于集群中任意一个磁盘
+    2. 使用块抽象而不是文件可以简化存储子系统
+    3. 块非常适合用户数据备份进而提供数据容错能力和可用性
+47. 块缓存，通常DataNode从磁盘读取数据块，但对于访问频繁的文件，其对应的块可能被显式的缓存在DataNode内存中，
+    以堆外块缓存的形式存在。默认情况下，一个块仅缓存在一个DataNode的内存中
+48. hdfs的文件权限机制与linux系统的文件权限机制类似r：read，w:write，x：execute 权限x对于文件表示忽略，
+    对于文件夹表示是否有权限访问其内容。
+49. 为了保证bloock块的安全性，在hadoop2当中，文件默认保存三个副本，在hdfs-site.xml当中修改dfs.replication
+    即可更改文件的副本数。
+50. HDFS写入流程：
+    1. 客户端通过Distributed FileSystem模块向NameNode请求上传文件，NameNode检查目标文件是否已存在，父目录是否存在
+    2. NameNode返回是否可以上传
+    3. 客户端请求第一个Block上传到哪几个DataNode服务器上
+    4. NameNode返回DataNode节点，分别为dn1，dn2，dn3
+    5. 客户端通过FSDataOutPutStream模块请求dn1上传数据，dn1收到请求会继续调用dn2，然后dn2调用dn3，将这个通信管道建立完成。
+    6. dn1,dn2,dn3逐级应答客户端
+    7. 客户端开始往dn1上传第一个Block（先从磁盘读取数据放到一个本地内存缓存），以Packey为单位，dn1收到一个Packet就会传给dn2，
+    dn2传给dn3；dn1每传一个packet会放入一个应答队列等待应答。
+    8. 当一个Block传输完成后，客户端再次请求NameNode上传第二个Block的服务器。（重复第3-7步）
+51. hdfs的读取流程
+    1. 客户端通过distributed FileSystem向NameNode请求下载文件，NameNode通过查询元数据，找到文件块所在的DataNode地址。
+    2. 挑选一台DataNode服务器，请求读取数据
+    3. DataNode开始传输数据给客户端（从磁盘里面读取数据输入流，以packet为单位来做校验。
+    4. 客户端以packet为单位接收，先在本地缓存，然后写入目标文件。
+52. 在hadoop中，为了保证元数据信息的快速检索，元数据被存放在内存中。
+53. 为了保证元数据的安全持久，元数据信息必须做可靠的持久化，hadoop将所有的元数据信息保存在了FSImage文件中。
+54. 为了解决元数据的增删改信息，hadoop引入了元数据操作日志edits文件。
+55. 为了解决edits膨胀问题，hadoop引入了secondaryNamenode来专门做fsimage与edits文件的合并。
+56. namenode工作机制
+    （1）第一次启动namenode格式化后，创建fsimage和edits文件。如果不是第一次启动，直接加载编辑日志和镜像文件到内存。
+    （2）客户端对元数据进行增删改的请求
+    （3）namenode记录操作日志，更新滚动日志
+    （4）namenode在内存中对数据进行增删改查
+57. secondary namenode工作机制
+    （1）secondary namenode询问namenode是否需要checkpoint。直接带回namnode是否检查结果。
+    （2）secondary namenode请求执行checkpoint
+    （3）namenode滚动正在写的edits日志
+    （4）将滚动前的编辑日志和镜像文件拷贝到secondary namenode
+    （5）secondary namenode加载编辑日志和镜像文件到内存，并合并
+    （6）生成新的镜像文件fsimage.chkpoint
+    （7）拷贝fsimage.chkpoint到namenode
+    （8）namenode将fsimage.chkpoint重新命名成fsimage
+58. hdfs oiv -i fsimage_0000000000000000864 -p XML -o hello.xml  查看fsimage信息
+59. secondaryNameNode如何辅助管理FSImage与edits文件
+    (1) secondaryNN通知namenode切换editlog
+    (2) secondaryNN从namenode中获得FSImage与editlog（通过http方式）
+    (3) secondaryNN将FSImage载入内存，然后开始合并editlog，合并之后成为新的fsimage
+    (4) secondaryNN将新的fsimage发回给namenode
+    (5) namenode用新的fsimage替换旧的fsimage
+60. fsimage与edits合并取决与两个参数，
+第一个参数是默认1小时fsimage与edits合并一次 dfs.namenode.checkpoint.period 3600
+第二个参数是hdfs操作次数达到1000000也会触发合并  dfs.namenode.checkopint.txns 1000000
+第三个参数是每隔多长时间检查一次hdfs的操作次数  dfs.namenode.checkpoint.check.period 60
+
+61. datanode工作机制
+（1) 一个数据块在datanode上以文件形式存储在磁盘上，包括两个文件，一个是数据本身，一个是元数据包括数据块的长度，块数据的校验和，以及时间戳。
+（2）datanode启动后向namenode注册，通过后，周期性（1小时）向namenode上报所有的块信息
+（3）心跳是每3s一次，心跳返回结果带有namenode给该datanode的命令如复制块数据到另一台机器，或删除某个数据块。如果超过10分钟没有收到茉欧哥datanode
+    的心跳，则认为该节点不可用
+（4）集群运行中可以安全加入和退出一些机器
+62. 数据完整性
+（1）当datanode读取block的时候，它会计算checksum
+（2）如果计算后的checksum，与block创建时值不一样，说明block已经损坏
+（3）client读取其他datanode上的block
+（4）datanode在其文件创建后周期验证checksum
+63. 掉线时限参数设置
+    datanode进程死亡或者网络故障造成datanode无法与namenode通信，namenode不会立即把该节点判定为死亡，要经过一段时间，这段时间暂称作超时时长。
+    HDFS默认的超时时长为10分钟+30秒。如果定义超时时间为timeout，则超时时长的计算公式为：
+	timeout  = 2 * dfs.namenode.heartbeat.recheck-interval + 10 * dfs.heartbeat.interval。
+	而默认的dfs.namenode.heartbeat.recheck-interval 大小为5分钟，dfs.heartbeat.interval默认为3秒。
+	需要注意的是hdfs-site.xml 配置文件中的heartbeat.recheck.interval的单位为毫秒，dfs.heartbeat.interval的单位为秒。
+64. apache hadoop yarn是hadoop的子项目，为分离hadoop2.0资源管理和计算组件而引入，yarn具有足够的通用性，可以支持其它的分布式计算模式
+65. 类似HDFS，YARN也是经典的主从架构，YARN服务由一个ResourceManager和多个NodeManager构成
+66. ResourceManager为主节点，NodeManager为从节点（slave）
+67.
+68.
+69.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

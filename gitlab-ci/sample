@@ -1,0 +1,47 @@
+stages:
+  - test
+  - staging
+  - production
+
+
+before_script:
+  - echo $CI_PROJECT_DIR  # Top-level directory where builds are executed.
+
+.runner_template: &do_build
+  script:
+    - echo $CI_PROJECT_DIR
+    - cd $CI_PROJECT_DIR
+    - echo "$CI_COMMIT_REF_NAME-$(git log -1 --pretty=format:%ad-%h --date=format-local:%Y%m%d%H%M)" > ./APPLICATION_VERSION
+    - gradle clean build -x test -PgitBranch=$CI_COMMIT_REF_NAME # --info --stacktrace
+    - gradle publish -PgitBranch=$CI_COMMIT_REF_NAME -PautoPublish=true
+    - export CI_COMMIT_REF_NAME
+    - bash build-docker.sh
+# -------------------build jar----------------
+production:
+  stage: production
+  only:
+    - master
+  tags:
+    - danakilat-production   # 运行这个production job使用tag为danakilat-production的runner
+  <<: *do_build
+
+
+staging:
+  stage: staging
+  tags:
+    - danakilat-staging
+  only:
+    - staging  # 仅在staging分支合并时触发staging job
+  <<: *do_build
+
+
+test:
+  stage: test
+  tags:
+    - danakilat-test
+  only:
+    - develop
+  <<: *do_build
+
+##################################
+$CI_COMMIT_REF_NAME 为The branch or tag name for which project is built

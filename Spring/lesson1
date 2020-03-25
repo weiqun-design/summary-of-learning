@@ -1,0 +1,16 @@
+1. 2003年产生spring，最初只有IOC 和 AOP
+2. 目前有spring data，spring boot, spring clout, spring framework, spring social
+3. IOC 控制反转（依赖注入）
+4. 搭建Spring环境https://maven.springframework.org/release/org/springframework/spring/4.3.9.RELEASE/
+5. 先复制以下5个jar
+spring-aop.jar           开发AOP特性时需要的JAR
+spring-bean.jar          处理bean的jar
+spring-core.jar          spring核心jar
+spring-context.jar       处理spring上下文的jar
+spring-expression.jar    spring表达式
+6. 下载log相关jar
+commons-logging.jar
+7. 下载spring tool suite
+
+8. spring IOC发展史：
+原来

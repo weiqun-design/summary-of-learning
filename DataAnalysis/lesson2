@@ -1,0 +1,20 @@
+1. pandas中Series可以自己指定index
+    import pandas as pd
+    from pandas import Series, DataFrame
+    x1 = Series([1, 2, 3, 4])
+    x2 = Series(data=[1, 2, 3, 4], index=['a', 'b', 'c', 'd'])
+2. 可以以字典的方式定义Series
+    d = {'a':1,'b':2,'c':3,'d':4}
+    x3 = Series(d)
+3. DataFrame 类型数据结构类似数据库表
+    data = {'chinese':[66,95,93,90,80],'english':[65, 85, 92, 88, 90], 'math':[30, 98, 96, 77, 90]}
+    df1 = DataFrame(data)
+    df2 = DataFrame(data, index=['ZhangFei','GuanYu', 'Zhaoyun','Huangzhong', 'DianWei'], columns=['english','math','chinese'])
+    # df2 中指定的列标签需存在，否则为nan
+4. 数据导入和输出
+    import pandas as pd
+    from pandas import Series, DataFrame
+    score = DataFrame(pd.read_excel('data.xlsx'))
+    score.to_excel('data1.xlsx')
+    print score
+5.

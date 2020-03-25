@@ -1,0 +1,37 @@
+1. 容器化越来越受欢迎的原因：灵活、轻量、便携、松耦合、可扩展、安全
+2. 容器在linux上运行，会与其他容器共用主机内核，运行离散进程，不占用额外内存。而虚拟机需要运行整套操作系统，通常来说VM会产生大量开销远超
+应用程序产生的实际消耗
+3. 安装docker后 执行docker --version  可以查看安装版本
+4. docker run hello world 可以检查是否安装成功
+5. docker image ls 查看image
+6. docker container ls --all
+7. 容器化应用的开发流程通常如下：创建images，为应用的每个模块创建独立的container；
+                             将containers和支持文件组装为一个完整的应用
+                             测试，发布完整的容器化应用。
+8. docker file 示例：
+# Use the official image as a parent image
+FROM node:current-slim
+# Set the working directory
+WORKDIR /usr/src/app
+# Copy the file from your host to your current location
+COPY package.json .
+# Run the command inside your image filesystem
+RUN npm install
+# Inform Docker that the container is listening on the specified port at runtime.
+EXPOSE 8080
+# Run the specified command within the container.
+CMD [ "npm", "start" ]
+# Copy the rest of your app's source code from your host to your image filesystem.
+COPY . .
+
+9. docker image build -t bulletinboard:1.0
+10. docker container run --publish 8000:8080 --detach --name bb bulletinboard:1.0
+    # --publish 指定container与宿主机的对接接口，如果不设置的话，防火墙会阻止宿主机与容器的网络通信
+    # --detach  指定dccker后台运行
+    # --name    指定一个名字
+11. docker container rm --force bb   # --force 可以删除正在运行中的container
+12. 注册docker hub账号 -->  创建repositories
+13. 共享的image名称必须为  <Docker ID>/<Repository Name>:<tag>
+14. 命令为 docker image tag  <Repository Name>:<tag>    <Docker ID>/<Repository Name>:<tag>
+15. 将image推到docker hub上， docker image push gordon/bulletinboard:1.0
+16. docker file最好和项目文件存放在一起，方便版本控制

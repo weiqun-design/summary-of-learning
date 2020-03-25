@@ -1,0 +1,158 @@
+1. XPath是一门在XML文档中查找信息的语言。XPath用于在XML文档中通过元素和属性进行导航。
+2. XPath使用路径表达式在XML文档中进行导航，XPath包含一个标准函数库，XPath是XSLT中的主要元素，XPath是一个W3C标准
+3. XPath含有超过100个内建的函数，这些函数用于字符串值、数值、日期和时间比较、节点和QName处理、序列处理、逻辑值等等。
+4. XPath中，有七种类型的节点：元素、属性、文本、命名空间、处理指令、注释以及文档节点（或称为根节点）
+<bookstore>
+    <book>
+        <title lang="en">Harry Potter</title>
+        <author>J K.Rowling</author>
+        <year>2005</year>
+        <price>29.99</price>
+    </book>
+</bookstore>
+
+<bookstore>文档节点
+<author>J K.Rowling</author> 元素节点
+lang="en" 属性节点
+
+5. 基本值（或称原子值，Atomic value)
+6. 项目是基本值或节点
+7. 节点关系，每个元素以及属性都有一个父，元素节点可有零个、一个或多个子，拥有相同的父的节点为同胞，某节点的父、父的父成为先辈，
+某个节点的子，子的子称为后代。
+8. XPath使用路径表达式来选取XML文档中的节点或节点集。节点是通过沿着路径或者步来选取的。
+9. 最有用的路径表达式：
+nodename 选取此节点的所有子节点
+/        从根节点选取
+//       从匹配选择的当前节点选择文档中的节点，而不考虑它们的位置
+.        选取当前节点
+..       选取当前节点的父节点
+@        选取属性
+
+10. 谓语，谓语用来查找某个特定的节点或者包含某个指定的值的节点，谓语被嵌在方括号中。
+/bookstore/book[1]       选取属于bookstore子元素的第一个book元素
+/bookstore/book[last()]  选取属于bookstore子元素的最后一个book元素
+/bookstore/book[last()-1] 选取属于bookstore子元素的倒数第二个book元素
+/bookstore/book[position()<3]  选取最前面的两个属于bookstore元素的子元素的book元素
+//title[@lang]            选取所有拥有名为lang的属性的title元素
+//title[@lang='eng']      选取所有title元素，且这些元素拥有指为eng的lang属性
+/bookstore/book[price>35.00]   选取bookstore元素中，其其中的price元素的值须大于35
+/bookstore/book[price>35.00]/title  选取bookstore元素中的book元素的所有title元素，且其中的price元素的值必须大于35
+
+11. 选取未知节点
+XPath通配符可用来选取未知的XML元素
+*       匹配任何元素节点
+@*      匹配任何属性节点
+node()  匹配任何类型的节点
+
+
+/bookstore/*      选取bookstore元素的所有子元素
+//*               选取文档中的所有元素
+//title[@*]       选取所有带有属性的title元素
+
+12. |代表或
+13. XPath轴，轴可定义相对于当前节点的节点集
+ancestor              选取当前节点的所有先辈
+ancestor-or-self      选取当前节点的所有先辈以及当前节点本身
+attribute             选取当前节点的所有属性
+child                 选取当前节点的所有子元素
+descendant            选取当前节点的所有后代元素（子、孙等）
+descendant-or-self    选取当前节点的所有后代元素（子、孙等）以及当前节点本身
+following             寻取文档中当前节点的结束标签之后的所有节点
+namespace             选取当前节点的结束标签之后的所有节点。
+parent                选取当前节点的父节点
+preceding             选取文档中当前节点的开始标签之前的所有节点
+preceding-sibling     选取当前节点之前的所有同级节点
+self                  选取当前节点
+
+14. 步包括轴、节点测试、零个或更多谓语
+步的语法：   轴名称::节点测试[谓语]
+
+child::book                     选取所有属于当前节点的子元素的book节点
+attribute::lang                 选取当前节点的lang属性
+child::*                        选取当前节点的所有子元素
+attribute::*                    选取当前节点的所有属性
+child::text()                   选取当前节点的所有文本子节点
+child::node()                   选取当前节点所有子节点
+descendant::book                选取当前节点的所有book后代
+ancestor::book                  选择当前节点的所有book先辈
+ancestor-or-self::book          选取当前节点的所有book先辈以及当前节点（如果此节点是book节点）
+child::*/child::price           选取当前节点的所有price孙节点
+
+15. XPath运算符   |  +  -  *  div  =  !=  <  <=  > >= or and mod
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

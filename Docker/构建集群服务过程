@@ -1,0 +1,19 @@
+1. 执行docker swarm init, 创建初始管理者节点
+# docker swarm join --token
+SWMTKN-1-2s4ujmvwslb9eb7z2hswcnfxf1d1eox0ovgtx2pwhjhwby512m-3pzg8q01mwiyu7nz61v4bgkn5 192.168.65.3:2377
+
+2. 选择工作目录，将源码复制到工作目录，源码中包含dockerFile，内容修改后如下
+    FROM openjdk:8-jdk
+    ARG APP_NAME=user-service-provider
+    ARG APPLICATION_VERSION=v0.0
+    ARG TZ=Asia/Singapore
+    COPY lib/ /app/lib
+    COPY ${APP_NAME}.jar /app/${APP_NAME}.jar
+    COPY startup.sh /app/startup.sh
+    WORKDIR /app
+    VOLUME /app/logs
+    EXPOSE 8080
+    CMD ["bash", "startup.sh"]
+3. 执行gradle clean build -x test构建jar包
+
+

@@ -1,0 +1,88 @@
+Docker overview
+docker是用于开发，转载和运行应用的开放式平台。docker可以将应用和基础环境隔离开，以便更加方便的部署项目。
+
+1. The Docker platform
+docker提供的container可以为应用程序提供松散隔离的环境。隔离性和安全性可以使许多container同时运行在同一主机上。
+由于docker container直接在主机内核中运行，不须额外的管理程序，因此containers是轻量的。这意味着在相同硬件情况下，相比虚拟机而言可以运行
+更多的docker container。docker container也可以在虚拟机中运行。
+docker提供工具和平台来管理container的生命过程：
+    可以使用container来开发应用和相关支持组件
+    container成为分发和测试应用程序的单元。
+    准备就绪后可以将应用服务以container或service形式发布在生产环境。本地数据中心、云服务或两者混合均适用。
+2. Docker Engine
+Docker engine是一个client-server架构应用，有以下主要组成部分：
+    长期守护进程，dockerd 命令
+    一套rest api指定与守护进程交流及下达指令的接口
+    命令行（CLI）接口， docker 命令
+守护进程创建和管理docker object，如images、containers、networks、volumes
+3. docker的作用
+快速持续发布应用，考虑以下场景：开发者们在本地编写代码，使用containers分享工作成果。
+                            使用docker部署在测试环境进行自动化或手工测试。
+                            开发者们找到bug后，可以在开发环境进行修复，并将其发布在测试环境进行校验。
+                            测试结束后，将image推送到生产环境进行发布
+响应式部署和扩展：docker container可以方便的在开发者笔记本、物理机、虚拟机或其他云环境运行
+                可移植性和轻量级的特性还可以轻松根据业务需要动态管理工作负载
+相比虚拟机而言，占用资源更少。
+4. Docker 结构
+docker为cs架构，docker client负责沟通docker守护进程。docker client和守护进程可以在同一个系统中运行，或者可以将docker client与
+远端docker 守护进程连接。docker 客户端使用一套rest api和守护进程交流。
+5. Docker守护进程
+docker守护进程管理images，containers，networks和volumes
+6. docker client
+docker client是使用者与docker交互的主要方式，当执行docker run时，客户端会将命令发送给dockerd，dockerd进行执行。客户端可以和多个守护
+进程进行交流。
+7. docker registries
+docker registries用于存放docker image。docker hub是一个公共库。也可以运行private registry。如果使用Docker Datacenter，它自带
+Docker Trusted Registry（DTR）
+使用docker pull、docker run、docker push命令时，都是从设置的库进行拉取或推送。
+8. Docker objects
+Images image是一个只读的模版，用于指示如何创建docker container。通常是在其他image基础上添加一些额外的个性化内容。如果需要创建一个image，
+需要创建一个docker file，定义创建及执行image的过程。dockerFile中的每一步指示都会在image中创建一个层。改变dockerfile并且重新构建image时，
+有变化的层才会被重新构建。这也是docker image轻量、快速的原因。
+
+containers 容器是image的可执行实例化结果，可以通过docker api或者CLI对container进行创建、运行、停止、移动或删除。可以将一个容器连接到
+不止一个网络，连接数据库或者基于当前状态创建新的image。容器与主机或其他容器之间具有隔离性。container通过image以及创建或启动时的附加命令定义。
+当容器被删除时，未持久化存储的信息都会永久消失。
+
+docker run命令举例 docker run -i -t ubuntu /bin/bash  当执行该命令时，如果本地没有ubuntu这个image，会从设置的库中拉取ubuntu。
+第二步docker会创建一个新的container。第三步docker分配一个读写文件系统到container，作为最后一个layer，这将允许正在运行的container在其
+本地文件系统中创建或修改文件。第四步由于未指定network，docker会创建一个默认network接口，包含来为container分配了一个IP地址。默认情况下，
+container可以使用宿主机的网络连接与外部网络进行连接。第五步docker启动container，并执行/bin/bash，由于使用了-i和-t参数交互式启动，可以
+使用键盘输入命令，返回结果会展示在终端上。第六步，当执行exit命令时，container 被关闭，但没有被删除
+
+services
+services允许多个docker 守护进程共同工作形成一个多个管理者和工作者的集群。集群的每一个成员都是一个docker守护进程，都通过docker api进行对话，
+集群允许定义期望模式，比如任意时间下同时可用的节点数量；默认情况下集群是在所有工作节点中负载均衡。docker1.12以上版本支持集群模式。
+
+9. 底层技术
+docker由Go语言编写
+docker使用namespaces技术来提供工作空间隔离性，运行一个container时，docker为这个container创建了一组namespaces。
+container的运行被限制在namespace中。
+Docker Engine使用的namespace举例：
+pid namespace：进程隔离
+net namespace：管理网络接口
+ipc namespace：管理IPC资源（内部程序对话）
+mnt namespace：管理文件系统（MNT：Mount）
+uts namespace：隔离内核和版本分类（UTS： unix timesharing system）
+此外docker engine依赖于control groups（cgroups），可以设置container的可用资源上限。
+docker engine使用UnionFS来为container构建存储块
+docker engine将namespaces、control groups和unionFS打包称为容器格式。默认的容器格式为libcontainer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

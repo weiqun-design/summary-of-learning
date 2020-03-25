@@ -1,0 +1,7 @@
+参考 http://www.win-vector.com/dfiles/LogisticRegressionMaxEnt.pdf
+
+1. 通过 log（pi(x(i))y(i)) 求偏导数为0  推导出一个等式1
+2. 通过信息熵（最大程度降低过拟合）最大化，pi()函数求和为0，等式1组合出拉格朗日函数
+3. 令拉格朗日偏导数为0
+4. 推导出pi(x)u 函数的形式
+

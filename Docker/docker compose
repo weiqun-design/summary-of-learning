@@ -1,0 +1,264 @@
+Overview of docker compose
+compose是用来定义和运行多个容器docker应用的工具。
+使用docker compose一般有三个步骤：
+1. 使用dockerfile定义应用的环境
+2. 在docker-compose.yml定义service
+3. 执行docker-compose up，启动 应用
+
+compose相关命令可以管理应用的全生命周期
+1. 启动，停止，重建
+2. 查看正在运行中服务的running情况
+3. 打印服务log
+4. 对服务执行一次性命令
+
+compose使用项目名来隔离环境
+
+前提：
+1. 创建项目目录
+mkdir composetest
+cd composetest
+2. 将项目文件放在项目目录下,requirments.txt也放在目录下
+项目内容为：
+import time
+
+import redis
+from flask import Flask
+
+app = Flask(__name__)
+cache = redis.Redis(host='redis', port=6379)
+
+
+def get_hit_count():
+    retries = 5
+    while True:
+        try:
+            return cache.incr('hits')
+        except redis.exceptions.ConnectionError as exc:
+            if retries == 0:
+                raise exc
+            retries -= 1
+            time.sleep(0.5)
+
+
+@app.route('/')
+def hello():
+    count = get_hit_count()
+    return 'Hello World! I have been seen {} times.\n'.format(count)
+
+3. 创建Dockerfile
+内容为：
+FROM python:3.7-alpine
+WORKDIR /code
+ENV FLASK_APP app.py
+ENV FLASK_RUN_HOST 0.0.0.0
+RUN apk add --no-cache gcc musl-dev linux-headers
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["flask", "run"]
+
+4. 在compose file中定义service，这个compose定义了两个服务，其中web 服务使用当前目录dockerfile构建的image，然后绑定了image构建的容器，
+对外暴露5000端口，redis服务使用了公共的redis image，是从docker hub registry拉取的
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+  redis:
+    image: "redis:alpine"
+
+5. 构建并启动应用
+在当前目录，执行docker-compose up
+构建完毕后，在其他终端窗口中执行docker image ls ，此时composetest_web，python，redis都会存在
+执行docker-compose down，可以停止应用
+
+6. 修改compose文件，来添加volume，由于该volume的存在可以让代码被修改后自动更新，而不必重新build
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/code
+    environment:
+      FLASK_ENV: development
+  redis:
+    image: "redis:alpine"
+
+7. 重新执行docker-compose up
+8. 如果要后台运行服务，使用 docker-compose up -d，停止时使用docker-compose stop
+
+9. 使用swarm可以依赖一个dockerfile构建一个image，但是构建出来的image仅在一个单独节点存在，并不会分布在其他节点上。
+10. 某些容器中的设置项会自动协调到相同的swarm节点，来保证swarm工作正常。有以下几种：
+    network_mode:"service:..."
+    network_mode:"container:..."
+    net:"container:..."
+    volumes_from
+    links
+11. 人工调度，swarm提供来许多调度来控制容器
+environemnt:
+  - "constraint: node==node-1"   # 指定具体节点
+environment:
+  - "constraint: storage==ssd"   # 指定storage为ssd的节点
+environment:
+  - "affinity: image==redis"  # 指定redis image已经pulled的节点
+
+12. compose可以在docker-compose执行的目录内.env文件中声明默认的环境变量
+13. 可以通过shell脚本向compose文件中传递变量
+    web：
+      image: "webapp: ${TAG}"
+14. 可以在docker run命令中执行服务中容器的环境变量
+    docker run -e variable=value ...
+
+    web:
+      environment:
+      - DEBUG=1
+15. 可以从shell脚本中直接向容器中传递参数, debug的值会从shell脚本中的相同变量获得
+    docker run -e VARIABLE
+
+    web:
+      environment:
+        - DEBUG
+
+16. 可以通过外部文件向容器中传入许多环境变量。
+    docker run --env-file=FILE ...
+
+    web：
+      env_file:
+        -web-variables.env
+
+17. 可以通过docker-compose命令设置环境变量
+    docker-compose run -e DEBUG=1 web python console.py
+    docker-compose run -e DEBUG web python console.py
+
+18. 可以通过.env文件来设置默认值，可以通过docker-compose config来查看compose配置
+    $ cat .env
+    TAG=v1.5
+
+    $ cat docker-compose.yml
+    version: '3'
+    services:
+      web:
+        image: "webapp:${TAG}"
+
+19. 变量取值的优先级
+    compose file
+    shell environment variables
+    environment file
+    dockerfile
+    variable is not defined
+
+20. compose支持两种形式的共享配置：
+    1. 增加新的compose文件
+    2. 扩展独立的service使用extends字段
+
+21. 默认情况下，compose会读两个文件，docker-compose.yaml和一个非必存文件docker-compose.override.yml, 依照管理，
+    docker-compose.yml文件包含来基本配置信息。override file中包含参数来覆盖部分原参数。
+    可以使用-f来指定 override file
+
+22. 举例，docker-compose.yml中内容如下：
+    web:
+      image: example/my_web_app:latest
+      depends_on:
+        - db
+        - cache
+
+    db:
+      image: postgres:latest
+
+    cache:
+      image: redis:latest
+
+    其中docker-compose.override.yml文件中内容如下，在执行docker-compose up时，默认会运行docker-compose.override.yml
+    web:
+      build: .
+      volumes:
+        - '.:/code'
+      ports:
+        - 8883:80
+      environment:
+        DEBUG: 'true'
+
+    db:
+      command: '-d'
+      ports:
+        - 5432:5432
+
+    cache:
+      ports:
+        - 6379:6379
+
+    production环境的override文件为 docker-compose.prod.yml, 在部署production时，应使用
+    docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d 命令
+
+    web:
+      ports:
+        - 80:80
+      environment:
+        PRODUCTION: 'true'
+
+    cache:
+      environment:
+        TTL: '500'
+
+
+23. 可以在compose 应用执行其他管理任务，如备份
+    docker-compose.yml文件内容如下：
+    web:
+      image: example/my_web_app:latest
+      depends_on:
+        - db
+    db:
+      image: postgres:latest
+
+    docker-compose.admin.yml文件内容如下：
+    dbadmin:
+      build: database_admin/
+      depends_on:
+        - db
+
+    运行docker-compose -f docker-compose.yml -f docker-compose.admin.yml \
+    run dbadmin db-backup
+
+24. 默认情况下，compose会为应用设置一个单独的网络，服务中的每个容器都加入默认网络。应用使用的网络名基于项目名，可以通过
+--project-name 或者COMPOSE_PROJECT_NAME 环境变量来修改网络名
+25. 加入应用所在目录为myapp，docker-compose.yml文件内容如下：
+    version: "3"
+    services:
+      web:
+        build: .
+        ports:
+          - "8000:8000"
+      db:
+        image: postgres
+        ports:
+          - "8001:5432"
+
+    运行 docker-compose up: 1.会创建一个myapp_default的network
+                            2. 创建一个web容器，网络名为web，加入了myapp_default
+                            3. 创建一个db容器，网络名为db，加入了myapp_default
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

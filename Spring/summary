@@ -1,0 +1,94 @@
+1. spring时分层java SE/EE full-stack轻量级开源框架
+Java SE（Java Standard Edition）是Java技术的核心和基础
+Java EE（Java2 Platform Enterprise Edition）适用于创建服务器应用程序和服务的Java2平台企业版
+Java ME是Java微版的简称（Java Platform， Micro Edition） 是一个技术和规范的集合，它为移动设备提供了基于Java环境的开发与应用
+平台。Java ME分为两类配置，一类是面向小型移动设备的CLDC，一类是面向功能更强大的移动设备如智能手机和机顶盒，称为CDC。
+Java ME有自己的类库，其中CLDC使用的是专用的Java虚拟机叫做JVM
+
+2. spring以IoC和AOP为内核，IOC（控制反转），AOP（面向切面编程）。
+3. 在实际开发中，通常服务器端采用三层体系架构，分别为表现层（web），业务逻辑层（service），持久层（dao）。
+4. spring对每一层都提供了技术支持，在表现层提供了与Struts2框架的整合，在业务逻辑层可以管理事务和记录日志等，在持久层可以整合
+Hibernate和JdbcTemplate等技术。
+5. Spring框架的主要优点：
+（1）方便解耦，简化开发
+    spring就是一个大工厂，可以将所有对象的创建和依赖关系的维护交给spring管理
+（2）方便集成各种优秀框架
+    spring不排斥各种优秀的开源框架，其内部提供了对各种优秀框架的直接支持（struts2，hibernate，mybatis）
+（3）降低Java EE API的使用难度
+ spring对JavaEE开发中非常难用的一些API都提供了封装，使这些API应用的难度大大降低。
+（4）方便程序的测试
+ spring支持JUnit4，可以通过注解方便地测试Spring程序。
+（5）AOP编程的支持
+Spring提供面向切面编程，可以方便地实现对程序进行权限拦截和运行监控的功能。
+（6）声明式事务的支持
+只需要通过配置就可以完成对事务的管理，而无须手动编程
+
+6. Spring框架采用分层架构，根据不同的功能被划分成了多个模块，这些模块大体可分为Data Access/Integration、Web、AOP、Aspects、
+Messaging、Instrumentation、Core Container和Test
+7. Data Access/Integration（数据访问/集成）
+数据访问/集成层包含JDBC、ORM、OXM、JMS和Transactions模块，
+JDBC：提供了一个JDBC的抽象层，大幅度减少了在开发过程中对数据库操作的编码。
+ORM：对流行的对象关系映射API，包括JPA、JDO、Hibernate和iBatis提供了的集成层。
+OXM：提供了一个支持对象XML映射的抽象层实现，如JAXB、Castor、XMLBeans、JiBX和XStream。
+JMS：指Java消息服务，包含的功能为生产和消费的信息
+Transactions事务模块：支持编程和声明式事务管理实现特殊接口类，并为所有的POJO
+8. Web模块
+Web模块：提供了基本的Web开发集成特性，例如多文件上传功能、使用Servlet监听器的IoC容器初始化以及Web应用上下文。
+Servlet模块：包括Spring模型-视图-控制器（MVC）实现Web应用程序。
+Struts模块：包含支持类内的Spring应用程序，集成了经典的Struts Web层
+Portlet模块：提供了在Portlet环境中使用MVC实现，类似Web-Servlet模块的功能。
+9. Core Container(核心容器）
+Spring的核心容器是其他模块建立的基础，由Beans模块、Core核心模块、Context上下文模块和Expression Language表达式。
+Beans 模块：提供了 BeanFactory，是工厂模式的经典实现，Spring 将管理对象称为 Bean。
+Core 核心模块：提供了 Spring 框架的基本组成部分，包括 IoC 和 DI 功能。
+Context 上下文模块：建立在核心和 Beans 模块的基础之上，它是访问定义和配置任何对象的媒介。ApplicationContext 接口是上下文模块的焦点。
+Expression Language 模块：是运行时查询和操作对象图的强大的表达式语言。
+10. Spring的其他模块还有 AOP、Aspects、Instrumentation 以及 Test 模块，具体介绍如下。
+AOP 模块：提供了面向切面编程实现，允许定义方法拦截器和切入点，将代码按照功能进行分离，以降低耦合性。
+Aspects 模块：提供与 AspectJ 的集成，是一个功能强大且成熟的面向切面编程（AOP）框架。
+Instrumentation 模块：提供了类工具的支持和类加载器的实现，可以在特定的应用服务器中使用。
+Test 模块：支持 Spring 组件，使用 JUnit 或 TestNG 框架的测试。
+
+11. IoC是指在程序开发中，实例的创建不再由调用者管理，而是由Spring容器创建。Spring容器会负责程序之间的关系，而不是由程序代码直接控制，
+因此控制权由程序到了 Spring 容器中，控制权发生了反转，这就是 Spring 的 IoC 思想。
+Spring 提供了两种 IoC 容器，分别为 BeanFactory 和 ApplicationContext，接下来将针对这两种 IoC 容器进行详细讲解。
+
+12. BeanFactory
+BeanFactory 是基础类型的 IoC 容器，它由 org.springframework.beans.facytory.BeanFactory 接口定义，并提供了完整的 IoC 服务支持。简单来说，BeanFactory 就是一个管理 Bean 的工厂，它主要负责初始化各种 Bean，并调用它们的生命周期方法。
+
+BeanFactory 接口有多个实现类，最常见的是 org.springframework.beans.factory.xml.XmlBeanFactory，它是根据 XML 配置文件中的定义装配 Bean 的。
+
+创建 BeanFactory 实例时，需要提供 Spring 所管理容器的详细配置信息，这些信息通常采用 XML 文件形式管理。其加载配置信息的代码具体如下所示：
+BeanFactory beanFactory = new XmlBeanFactory(new FileSystemResource("D://applicationContext.xml"));
+
+13. ApplicationContext
+ApplicationContext 是 BeanFactory 的子接口，也被称为应用上下文。该接口的全路径为 org.springframework.context.ApplicationContext，
+它不仅提供了 BeanFactory 的所有功能，还添加了对 i18n（国际化）、资源访问、事件传播等方面的良好支持
+1）ClassPathXmlApplicationContext
+该类从类路径 ClassPath 中寻找指定的 XML 配置文件，找到并装载完成 ApplicationContext 的实例化工作，具体如下所示。
+ApplicationContext applicationContext = new ClassPathXmlApplicationContext(String configLocation);
+
+在上述代码中，configLocation 参数用于指定 Spring 配置文件的名称和位置，如 applicationContext.xml。
+2）FileSystemXmlApplicationContext
+该类从指定的文件系统路径中寻找指定的 XML 配置文件，找到并装载完成 ApplicationContext 的实例化工作，具体如下所示。
+ApplicationContext applicationContext = new FileSystemXmlApplicationContext(String configLocation);
+
+它与 ClassPathXmlApplicationContext 的区别是：在读取 Spring 的配置文件时，FileSystemXmlApplicationContext 不再从类路径中读取配置
+文件，而是通过参数指定配置文件的位置，它可以获取类路径之外的资源
+
+需要注意的是，BeanFactory 和 ApplicationContext 都是通过 XML 配置文件加载 Bean 的。
+二者的主要区别在于，如果 Bean 的某一个属性没有注入，则使用 BeanFacotry 加载后，在第一次调用 getBean() 方法时会抛出异常，
+而 ApplicationContext 则在初始化时自检，这样有利于检查所依赖的属性是否注入。
+因此，在实际开发中，通常都选择使用 ApplicationContext，而只有在系统资源较少时，才考虑使用 BeanFactory。本教程中使用的就是 ApplicationContext。
+
+14.
+
+
+
+
+
+
+
+
+
+

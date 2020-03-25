@@ -1,0 +1,154 @@
+
+
+
+对于docker file的建议
+1. 尽可能创建灵活的docker containers，可随时停止和删除并重建和替换
+2. 当执行docker build命令时，当前工作路径被成为build context
+3. 通常dockerfile都在当前目录，也可以使用文件flag -f
+4. 无论dockerfile在哪个目录，当前目录下所有文件及目录，以及目录中所有文件都会被发送给docker 守护进程，作为build的上下文
+5. docker build [options] -     此命令可以创建一个image而不会传递任何context
+6. 当dockerFile中无需copy文件时，上下文对于构建image无作用，省略build context可以提高构建速度
+7. docker build [OPTIONS] -f- PATH
+8.
+# build an image using the current directory as context, and a Dockerfile passed through stdin
+docker build -t myimage:latest -f- . <<EOF
+FROM busybox
+COPY somefile.txt .
+RUN cat /somefile.txt
+EOF
+
+9.
+docker build -t myimage:latest -f- https://github.com/docker-library/hello-world.git <<EOF
+FROM busybox
+COPY hello.c .
+EOF
+Docker会先进行git clone到本地机器，然后将这些文件作为上下文发给守护进程
+10.  .dockerignore  文件可以将某些文件或目录排除在外
+11. 多阶段构建可以有效降低最终image的尺寸，可以按照修改频率排序定义构建层，如
+FROM golang:1.11-alpine AS build
+
+# Install tools required for project
+# Run `docker build --no-cache .` to update dependencies
+RUN apk add --no-cache git
+RUN go get github.com/golang/dep/cmd/dep
+
+# List project dependencies with Gopkg.toml and Gopkg.lock
+# These layers are only re-built when Gopkg files are updated
+COPY Gopkg.lock Gopkg.toml /go/src/project/
+WORKDIR /go/src/project/
+# Install library dependencies
+RUN dep ensure -vendor-only
+
+# Copy the entire project and build it
+# This layer is rebuilt when a file changes in the project directory
+COPY . /go/src/project/
+RUN go build -o /bin/project
+
+# This results in a single layer image
+FROM scratch
+COPY --from=build /bin/project /bin/project
+ENTRYPOINT ["/bin/project"]
+CMD ["--help"]
+
+12. 不要安装不需要的依赖报，以降低image的复杂性、尺寸和构建时间
+13. 解耦合应用，使container独立
+14. 仅有RUN、COPY、ADD会创建层，其它命令不会增加构建后的image 尺寸
+15. 可能的话使用多阶段构建
+16. 安装包时不同的包之间应换行，以避免重复
+RUN apt-get update && apt-get install -y \
+  bzr \
+  cvs \
+  git \
+  mercurial \
+  subversion
+
+17. 执行docker build命令时可以加上 --no-cache=true 来使构建时不复用已有image
+18. Dockerfile 命令
+From   推荐使用alpine image作为基础image，
+
+LABEL  标签     带空格的字符串需要用引号包围，或者使用转义，字符串内部包含" 也必须使用转义
+# Set one or more individual labels
+LABEL com.example.version="0.0.1-beta"
+LABEL vendor1="ACME Incorporated"
+LABEL vendor2=ZENITH\ Incorporated
+LABEL com.example.release-date="2015-02-12"
+LABEL com.example.version.is-production=""
+
+
+# Set multiple labels on one line
+LABEL com.example.version="0.0.1-beta" com.example.release-date="2015-02-12"
+
+# Set multiple labels at once, using line-continuation characters to break long lines
+LABEL vendor=ACME\ Incorporated \
+      com.example.is-beta= \
+      com.example.is-production="" \
+      com.example.version="0.0.1-beta" \
+      com.example.release-date="2015-02-12"
+
+RUN
+APT-GET是最常用的命令
+RUN apt-get update && apt-get install -y \
+    package-bar \
+    package-baz \
+    package-foo
+可以考虑指定安装包版本
+
+RUN set -o pipefail && wget -O - https://some.site | wc -l > /number
+# 其中set -o pipefail 可以保证在后续任何一步出现问题，都会导致build失败，否则即使wget失败，后面的wc -l > /number仍然会成功，导致构建出错误的image
+
+
+CMD
+CMD命令用于运行image中的程序，形式为CMD ["executable", "param1", "param2"...]
+
+EXPOSE
+EXPOSE用于对外连接端口号
+
+ENV
+ENV为环境变量
+ENV PG_MAJOR 9.3
+ENV PG_VERSION 9.3.4
+RUN curl -SL http://example.com/postgres-$PG_VERSION.tar.xz | tar -xJC /usr/src/postgress && …
+ENV PATH /usr/local/postgres-$PG_MAJOR/bin:$PATH
+每个ENV行都会创建一个内部层，和RUN相同，因此尽量避免使用ENV
+
+COPY与ADD
+COPY不同位置文件时，应尽可能分别处理，而不是一次性完成
+
+
+应尽量避免如下情况
+ADD http://example.com/big.tar.xz /usr/src/things/
+RUN tar -xJf /usr/src/things/big.tar.xz -C /usr/src/things
+RUN make -C /usr/src/things all
+
+而应该使用如下命令
+RUN mkdir -p /usr/src/things \
+    && curl -SL http://example.com/big.tar.xz \
+    | tar -xJC /usr/src/things \
+    && make -C /usr/src/things all
+
+
+ENTRYPOINT  入口点
+
+COPY ./docker-entrypoint.sh /
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["postgres"]
+
+可以使用docker run postgres
+
+VOLUME 可以被用于导出数据库存储，配置存储或其他由docker container创建的文件
+
+WORKDIR
+应尽可能使用绝对路径
+
+ONBUILD
+在当前dockerfile构建完以后会进行，通常用在父image中使用
+
+
+大多数Dockerfiles都会引用父image，通常需要定义一个base image
+
+
+
+
+
+
+

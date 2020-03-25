@@ -1,0 +1,214 @@
+Network drivers
+
+Docker的networking 子系统是可插拔的。
+默认的驱动形式有 bridge，host，overlay，macvaln，none，network plugins
+bridge是默认的网络驱动，通常当应用在独立容器中运行时，通常会使用桥接网络。
+host：对于独立容器，如果要去除容器和宿主机之间的网络隔离，可以直接使用宿主机的host。
+overlay：覆盖式网络连接，可以将许多docker 守护进程共同连接，可以在集群内使用。
+macvlan：macvlan允许注册一个为容器注册一个mac 网络地址，使其表现为物理机形式
+none：不允许任何网络连接，通常与自定义网络驱动程序一起使用
+
+当需要多个容器在同一个宿主机上运行时，bridge网络最好。
+当容器与宿主机之间不应进行网络隔离时，使用host网络。
+当使用集群服务时，最好使用overlay network。
+当需要让容器的网络看起来和物理机相同时，可以使用macvlan network。
+此外还可以使用第三方network stacks
+
+
+use bridge networks
+如果使用默认桥接网络只能使用IP连接，除非使用--link 选项。用户自定义的桥接网络网络，容器见可以通过名字或别名进行通信。
+使用桥接网络网络可以在容器内的/etc/hosts中定义host，但是这样可能使问题不易于排查。
+使用默认的桥接网络可能会有不相关的服务间对话的风险，使用用户自定义网络可以设置一个网络通信范围。
+使用自定义的网络，可以在使用中连接或断开。对于默认的网络，如果要断开，需要stop 容器，并使用新的network options重新构建容器。
+docker network create my-net  # 创建自定义桥接网络
+
+docker create --name my-nginx \
+--network my-net \
+--publish 8080:80 \
+nginx:latest #容器的80端口映射为宿主机8080端口
+
+docker network connect my-net my-nginx  将正在运行的my-nginx连接到自定义的network
+连接到同一个自定义桥接网络的容器，可以相互之间访问所有端口
+
+docker network disconnect my-net my-nginx  #断开my-net自定义桥接网络
+
+默认情况下docker默认桥接网络与外部网络是不联通的，如果要实现联通，需要更改两处设置
+sysctl net.ipv4.conf.all.forwarding=1
+sudo iptables -P FORWARD ACCEPT
+
+线上环境不推荐使用默认桥接网络。
+
+
+overlay networks
+当初始化一个集群，或者向已有集群中添加一个新的docker host时，会闯将两个新的networks：
+    一个覆盖式network，称为ingress（入口），负责集群的数据传输。如果创建集群是没有将网络连接到overlay network时，
+默认会连接到ingress。
+    一个桥接网络称为docker_gwbridge,负责连接各docker节点之间网络传输
+operations for all overlay networks
+    准备工作: 防火墙规则设置docker守护进程使用overlay networks
+             保持以下端口号畅通：
+                 TCP端口号2377，为集群管理对话
+                 TCP和UDP端口号7946，为了节点间沟通
+                 UDP端口号,4789为了覆盖式网络传输
+             创建覆盖式网络钱，需要初始化docker 守护进程为集群管理员，docker swarm init
+             或者加入一个已存在的docker集群。这会保证默认的ingress overlay network已经用于集群
+    创建overlay network用于集群服务使用
+        docker network create -d overlay my-overlay
+    创建集群或独立容器间也可访问的overlay network
+         docker network create -d overlay --attachable my-attachable-overlay
+    可以指定ip address范围，subnet，gateway和其他设置，docker network create --help
+集群网络通信默认使用AES算法 GCM模式加密，管理员节点每12个小时更换一次秘钥
+如果想要数据也加密，可添加--opt encrypted, 数据加密对性能有一定影响，线上使用前需要进行测试
+windows系统不支持overlay network encryption
+
+docker network create --opt encrypted --driver overlay --attachable my-attachable-multi-host-network
+
+docker17.05以上版本允许用户设置入口网络，这在默认子网冲突情况小尤其有用，可以将其他低级别的网络设置为MTU，
+    1. docker network inspect ingress 检查入口网络，删除连接到该集群的容器。
+    2. docker network rm ingress
+    3. docker network create \
+        --driver overlay \
+        --ingress \
+        --subnet=10.11.0.0/16 \
+        --gateway=10.11.0.2 \
+        --opt com.docker.network.driver.mtu=1200 \
+        my-ingress
+    4. 重启与该集群连接的容器
+docker_gwbridge也可以进行自定义
+
+对外暴露端口号，-p 8080:80 or
+-p published=8080,target=80	Map TCP port 80 on the service to port 8080 on the routing mesh.
+-p 8080:80/udp or
+-p published=8080,target=80,protocol=udp	Map UDP port 80 on the service to port 8080 on the routing mesh.
+-p 8080:80/tcp -p 8080:80/udp or
+-p published=8080,target=80,protocol=tcp -p published=8080,target=80,protocol=udp	Map TCP port 80 on the service to TCP port 8080 on the routing mesh, and map UDP port 80 on the service to UDP port 8080 on the routing mesh
+
+docker会为服务做负载均衡
+通常情况下，应该使用集群服务名进行连接，因为这样会由docker进行负载均衡。
+
+
+overlay network tutorial
+涉及四部分内容：一、使用默认覆盖式网络  对于线上系统不是最好的选择
+              二、使用使用自定义覆盖式网络  推荐用于线上环境
+              三、单独容器使用覆盖式网络
+              四、单独容器和集群件简体通信，17.06以上支持
+
+一、使用默认的覆盖式网络
+先决条件
+至少有一个单节点集群
+需要相互之间联通的三套物理机或者宿主机，
+
+过程
+创建集群：
+1. 在manager，初始化集群，如果manager主机只有一个网络接口，--advertise-addr可以省略
+docker swarm init --advertise-addr=<IP-ADDRESS-OF-MANAGER>
+注意保存token，以方便加入后续节点
+2. 在worker-1机器上，
+docker swarm join --token <TOKEN> \
+  --advertise-addr <IP-ADDRESS-OF-WORKER-1> \
+  <IP-ADDRESS-OF-MANAGER>:2377
+3. 在worker-2机器上，
+docker swarm join --token <TOKEN> \
+--advertise-addr <IP-ADDRESS-OF-WORKER-2> \
+<IP-ADDRESS-OF-MANAGER>:2377
+4. 在manager机器上执行 docker node ls 或者
+    docker node ls --filter role=manager
+    docker node ls --filter role=worker
+5. 在三台机器上分别查看networks
+    docker network ls
+   如果创建集群时，未指定network，那么各节点会连接到ingress网络。推荐为不同的应用分别创建overlay网络。
+
+创建服务：
+1. 在管理员节点，创建新的overlay network，nginx-net
+docker network create -d overlay nginx-net
+只需在管理员节点创建即可，因为其他节点需要运行时会自动创建。
+2. 在管理员节点，创建5副本 nginx服务，与nginx-net连接，对外暴露80端口，这5个服务容器可以相互联通而无需暴露任何端口。
+docker service create \
+  --name my-nginx \
+  --publish target=80,published=80 \
+  --replicas=5 \
+  --network nginx-net \
+  nginx
+当不使用--publish时，使用默认的入口暴露模式，意味着如果连接80端口在管理节点或任意工作节点时，会与5个中的一个服务的80端口连接，
+3. 执行docker service ls 来监控服务启动情况
+4. 在manger、worker-1、worker-2节点分别检查网络情况，注意containers和peers部分，containers列出来全部与overlay network相连的network
+5. 在manager检查service  docker service inspect my-nginx, 留意ports和endports
+6. 额外创建一个nginx-net-2，然后更新service，使服务使用nginx-net-2
+    docker network create -d  overlay nginx-net-2
+    docker service update \
+    --network-add nginx-net-2 \
+    --network-rm nginx-net \
+    my-nginx
+7. 执行docker service ls 来验证服务四否已更新， 而且是否重启完毕
+   执行docker network inspect nginx-net 来检查是否已经没有容器再连接到nginx-net
+   执行docker network inspect nginx-net-2 来检查是否所有的容器连接到nginx-net-2上
+8. 清除service和network，从manager节点执行：(方便后续流程的尝试)
+   docker service rm my-nginx
+   docker network rm nginx-net nginx-net-2
+
+
+二、使用用户自定义的覆盖式网络
+先决条件：
+使用之前以搭建好的集群
+
+过程：
+1. 创建自定义覆盖式网络
+docker network create -d overlay my-overlay
+2. 使用自定义覆盖式网络，并暴露8080端口
+docker service create \
+  --name my-nginx \
+  --network my-overlay \
+  --replicas 1 \
+  --publish published=8080,target=80 \
+  nginx:latest
+3. 运行docker network inspect my-overlay, 注意查看containers部分，检查my-nigix服务是否连接到该网络
+4. 删除service和network
+   docker service rm my-nginx
+   docker network rm my-overlay
+
+
+三、为单独容器使用覆盖式网络
+
+准备工作，有两个不同的docker hosts，每个host都在docker 17.06以上，以下端口未被占用
+TCP port 2377
+TCP and UDP port 7946
+UDP port 4789
+
+过程：
+1. 在host1上，初始化一个集群
+   docker swarm init
+   在host2上，加入host1集群
+   docker swarm join --token <your_token> <your_ip_address>:2377
+2. 在host1，创建一个attachable覆盖式网络
+   docker network create --driver=overlay --attachable test-net
+3. 在host1，启动一个容器连接test-net  -it
+   docker run -it --name alpine1 --network test-net alpine
+4. 此时在host2上，执行docker network ls,发现test-net并不存在
+5. 在host2，启动另一个容器，连接到test-net
+   docker run -dit --name alpine2 --network test-net alpine
+6. 此时在host2上，指定docker network ls， 发现test-net已经存在
+7. 在host1上，ping alpine2
+   ping -c 2 alpine2
+8. 清理已存在的网络，
+   在host2 执行
+   docker container stop alpine2
+   docker network ls
+   docker container rm alpine2
+   在host1 执行
+   docker container rm alpine1
+   docker network rm test-net
+
+四、单独container和swarm之间的连接
+
+
+
+
+
+
+
+
+
+
+
+
+

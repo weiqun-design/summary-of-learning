@@ -1,0 +1,146 @@
+swarm mode overview
+
+docker engine管理
+使用docker engine CLI命令即可创建出一个docker swarm 集群，不需要额外的协调软件。
+
+去中心化设计
+去中心化设计，使用docker swarm无需在启动的时候区分处理managers，workers不同节点，使用docker engine可以在一台主机上建立一套完整的集群。
+docker engine使用声明式方法，来定义应用运行时各种服务应处于的状态。
+
+增加或减少任务
+对于每个服务，可以指定想要执行的任务数，数量增加或减少时，swarm会自动增加或删除tasks。
+
+状态检查
+集群管理者节点会持续监控当前状态于期望状态之间的差异，举例说明，当启动一个10备份的服务时，如果有某个worker机器中的2个备份崩溃了，那么管理者
+节点会再创建2个新的备份来替换已经崩溃的副本，swarm管理者将这两个副本分配给当前可用的workers。
+
+多主机网络
+可以为服务指定一个overlay network，swarm manager会自动给containers分配地址
+
+服务发现
+集群管理节点为每个服务分配一个独立的DNS名，容器间负载均衡。可以通过DNS server映射访问任意一个服务。
+
+Load balancing
+可以将端口暴露给外部负载均衡程序。docker swarm可以指定如果在节点间分配容器负载。
+
+回滚更新
+可以增量式更新节点，可以通过swarm manager来控制不同节点间发布的间隔时间，如果有异常情况发生，可以roll back到一个先前的版本。
+
+
+swarm mode key concepts
+集群管理属性是用swarmkit来构建的，swarmkit是一个单独的程序，继承自docker orchestration 层，直接在docker内部使用。
+一个集群由多个docker主机组成，分别作为managers和workers。一个docker主机可以是管理节点，工作节点或者同时是管理节点和工作节点。
+创建一个服务时，可定义可选项（副本数量，网络，可用存储资源，对外界暴露的接口等等）。一个task为一个运行中的容器，是集群服务的一部分，
+由swarm manager管理，与独立容器有所不同。
+相比于独立的容器，使用集群的一大好处是可以修改服务的配置，包括网络、volumes而不需要手动重启service。docker会自动更新configuation,
+停止使用过期配置的任务，创建新的tasks来使用新的配置
+集群与独立container最大的差别是只有集群管理员才能管理集群，而独立容器可以在任意一个docker守护进程上启动。
+
+nodes
+通常在多个物理机上和云设备上分布式创建docker node，默认情况下管理节点同样作为worker node工作，但是也可以设置为manager-only node。
+
+services and tasks
+一个task包含一个容器和容器内部运行的命令。管理员节点根据副本数将任务分配给worker节点，一旦任务分配给来某个节点，就不会再流转给另一个节点。
+该任务仅可在分配的节点运行或运行失败。
+
+load balancing
+如果未指定对外暴露端口，swarm manager会分配一个30000-32767范围内的任意一个。
+
+
+create a swarm
+在选为manager主机上，执行以下命令创建一个新的swarm, --advertise-addr属性设置了管理节点的地址，其他节点必须可以与此ip地址联通
+docker swarm init --advertise-addr <MANAGER-IP>
+执行docker info，查看swarm状态，swarm状态应为active
+执行docker node ls 来查看节点信息，ID后面的*代表来当前机器
+
+Add nodes to the swarm
+一旦创建好manager节点，就可以向集群中添加worker nodes
+在各worker机器上，执行以下命令，ip为manager的地址，token为创建manager时生成的token
+docker swarm join \
+  --token  SWMTKN-1-49nj1cmql0jkz5s954yi3oex3nedyz0fb0xx14ie39trti4wxv-8vxv8rssmk743ojnwacrr2e7c \
+  192.168.99.100:2377
+执行docker node ls 可以查看当前节点情况
+
+deploy a service to the swarm
+在管理员节点执行
+docker service create --replicas 1 --name helloworld alpine ping docker.com
+--name代表service名
+--replicas代表总tasks数
+执行docker service ls 可以查看正在运行中的service
+
+Inspect a service on the swarm
+执行docker service inspect --pretty <SERVICE-ID>来查看service详情
+执行docker service ps helloworld,可以查看是哪个节点在运行服务
+在对应节点机器上，执行docker ps来查看正在运行的container详情
+
+scale the service in the swarm
+当在swarm发布了一个服务后，可以使用Docker CLI来控制service中容器数量。docker service scale <SERVICE-ID>=<NUMBER-OF-TASKS>
+运行docker service scale helloworld=5
+运行docker service ps helloworld
+在对应机器上执行docker ps，可以查看在当前机器上运行的container情况
+
+delete the service running on the swarm
+运行docker service rm helloworld 删除helloworld
+
+Apply rolling updates to a service
+执行以下命令
+docker service create \
+  --replicas 3 \
+  --name redis \
+  --update-delay 10s \
+  redis:3.0.6
+默认情况下每次只更新一个task，每次间隔时间为--update-delay值，也可以设置--update-parallelism参数来设置连续更新的最大tasks数量。
+默认情况下当前更新的task返回状态为running时，才会更新下一个任务，如果更新时状态返回failed，调度器会暂停更新。可以通过设置
+--update-failure-action来控制更新过程的行为。
+运行docker service update --image redis:3.0.7 redis
+如果更新过程中有因报错发生的暂停
+可以执行docker service update redis
+docker service ps redis
+
+drain a node on the swarm
+有时出于维护的考虑，可能会将某个节点停止使用，执行后该节点上的服务会停掉，也不再接受新的任务，管理节点会将tasks分配到其他节点。
+执行docker node update --availablity drain <node-id>
+docker node update --availablity drain worker1
+执行docker node update --availablity active <node-id>可以恢复为active状态
+
+use swarm mode routing mesh
+所有的节点都会使用ingress routing mesh，该路由会各节点都能与对外发布的端口相连，使用ingress的前提是7946和4789端口可用：
+7946 TCP/UDP 容器网络发现使用
+4789 UDP   容器ingress网络使用
+
+docker service create \
+  --name <SERVICE-NAME> \
+  --publish published=<PUBLISHED-PORT>,target=<CONTAINER-PORT> \
+  <IMAGE>
+可以为一个已经存在的service发布端口
+docker service update \
+  --publish-add published=<PUBLISHED-PORT>,target=<CONTAINER-PORT> \
+  <SERVICE>
+默认情况下发布的是一个TCP端口，可以通过protocal来控制是否使用UDP
+当期望在每个节点运行多个replicas时，不能指定一个静态的target port，可以省略published，或者每个节点只运行一个service，或者global service而不是
+relicated。
+以下命令使用了host模式，绕过了routing mesh；当不指定mode时，默认使用routing mesh；绕过routing mesh可以将port绑定在固定的节点上；在
+使用routing mesh时，所有节点的端口都可被外界访问。
+docker service create --name dns-cache \
+  --publish published=53,target=53,protocol=udp,mode=host \
+  --mode global \
+  dns-cache
+在使用routing mesh或非routing mesh都可以设置外部负载均衡器
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
