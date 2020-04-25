@@ -1,0 +1,79 @@
+Java标准库定义的常用异常包括
+
+
+Exception
+│
+├─ RuntimeException
+│  │
+│  ├─ NullPointerException
+│  │
+│  ├─ IndexOutOfBoundsException
+│  │
+│  ├─ SecurityException
+│  │
+│  └─ IllegalArgumentException
+│     │
+│     └─ NumberFormatException
+│
+├─ IOException
+│  │
+│  ├─ UnsupportedCharsetException
+│  │
+│  ├─ FileNotFoundException
+│  │
+│  └─ SocketException
+│
+├─ ParseException
+│
+├─ GeneralSecurityException
+│
+├─ SQLException
+│
+└─ TimeoutException
+
+
+logging系统在JVM启动时读取配置文件并完成初始化，一旦开始运行main(),就无法再配置
+配置不太方便，需要在JVM启动时传递参数 -Djava.util.logging.config.file=<config-file-name>
+因此，java标准库内置的Logging使用并不是非常广泛。
+
+
+和Java标准库提供的日志不同，Commons Logging是一个第三方日志库，它是由Apache创建的日志模块。
+Commons Logging的特色是，它可以挂接不同的日志系统，并通过配置文件指定挂接的日志系统。默认情况下，Commons Loggin自动搜索并使用Log4j（Log4j是另一个流行的日志系统），如果没有找到Log4j，再使用JDK Logging
+
+在开发阶段，始终使用Commons Logging接口来写入日志，并且开发阶段无需引入Log4j。
+如果需要把日志写入文件， 只需要把正确的配置文件和Log4j相关的jar包放入classpath，就可以自动把日志切换成使用Log4j写入，无需修改任何代码。
+
+由于JVM为每个加载的class创建来对应的Class实例，并在实例中保存了该class的所有信息，包括类名、包名、父类、实现的接口、所有方法、字段等。
+因此，如果获取了某个Class实例，我们就可以通过这个Class实例获取到该实例对应的class的所有信息，这种通过Class实例获取class信息的方法称为反射。
+如果获取一个class的Class实例？有三个方法：
+方法一：直接通过一个class的静态变量class获取：
+Class cls = String.class
+方法二：如果我们有一个实例变量，可以通过该实例变量提供的getClass()方法获取
+String s = "Hello";
+Class cls = s.getClass();
+方法三：如果知道一个class的完整类名，可以通过静态方法Class.forName()获取
+Class cls = Class.forName("java.lang.String");
+
+因为Class实例在JVM中是唯一的，所以，上述方法获取的Class实例是同一个实例。可以用==比较两个Class实例
+instanceof不但匹配制定类型，还匹配制定类型的子类。而用==判断class实例可以精确地判断数据类型，但不能作子类型比较。
+
+
+Java的反射API提供的Field类封装了字段的所有信息：
+通过Class实例的方法可以获取Field实例：getField()，getFields()，getDeclaredField()，getDeclaredFields()；
+通过Field实例可以获取字段信息：getName()，getType()，getModifiers()；
+通过Field实例可以读取或设置某个对象的字段，如果存在访问限制，要首先调用setAccessible(true)来访问非public字段。
+通过反射读写字段是一种非常规方法，它会破坏对象的封装
+
+
+
+
+
+
+
+
+
+
+
+
+
+

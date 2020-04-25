@@ -1,0 +1,72 @@
+注解
+
+注解是放在Java源码的类、方法、字段、参数前的一种特殊注解：
+注释会被编译器直接忽略注解则可以被编译器打包进入class文件，因此，注解是一种用作标注的元数据。
+
+Java的注解可以分为三类
+第一类是由编译器使用的注释，例如
+@Override 让编译器检查该方法是否正确地实现了覆写；
+@SuppressWarnings: 告诉编译器忽略此处代码产生的警告。
+这类注解不会被编译进入.class文件，它们在编译后就被编译器扔掉了。
+
+第二类由工具处理.class
+比如有些工具会在加载class的时候，对class做动态修改，实现一些特殊的功能。这类注解会被编译进入.class文件，但加载结束后并不会存在于内存中。
+这类注解只被一些底层库使用，一般不必自己处理。
+
+第三类是在程序运行期能够读取的注解，它们在加载后一直存在于JVM中，这也是最常用的注解。
+
+配置参数可以包括：
+所有基本类型；
+String；
+枚举类型；
+基本类型、String以及枚举的数组。
+因为配置参数必须是常量，所以，上述限制保证了注解在定义时就已经确定了每个参数的值
+
+Java使用@interface语法定义注解，格式如下
+
+有一些注解可以修饰其他注解，这些注解就称为元注解。Java标准库已经定义了一些元注解，通常只需要使用元注解，不需要自己编写元注解。
+
+@Target
+最常用的元注解是@Target，使用@Target可以定义Annoatation能够被应用于源码的哪些位置：
+    类或接口：ElementType.TYPE；
+    字段：ElementType.FIELD；
+    方法：ElementType.METHOD；
+    构造方法：ElementType.CONSTRUCTOR；
+    方法参数：ElementType.PARAMETER。
+
+@Retention
+定义了Annotation的声明周期
+仅编译期：RetentionPolicy.SOURCE;
+仅class文件：RetentionPolicy.CLASS;
+运行期：RetentionPolicy.RUNTIME。
+
+@Repeatable
+可以定义Annotation是否可重复，这个注解应用不是特别广泛
+
+@Inherited
+使用@inherited定义子类是否可继承父类定义的Annotation。
+
+
+Java使用@interface定义注解：
+可定义多个参数和默认值，核心参数使用value名称；
+必须设置@Target来指定Annotation可以应用的范围；
+应当设置@Retention(RetentionPolicy.RUNTIME)便于运行期读取该Annotation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,62 @@
+1. 数组有如下限制：数组初始化后大小不可变；数组只能按索引顺序存取。
+2. 实际上可能需要不同类型的集合类来处理不同的数据
+例如：可变大小的顺序链表
+     保证无重复元素的集合
+3. collection
+Java标准库自带的java.util包提供了集合类：Collection,它是除Map外所有其他集合类的根接口。Java的java.util包主要提供了以下三种类型的集合。
+List：一种有序列表的集合。
+Set：一种保证没有重复元素的集合。
+Map：一种通过键值查找的映射表集合。
+4. Java集合的设计特点：一是实现了接口和实现类相分离，有序表的接口List，具体实现类有ArrayList，LinkedList
+                     二是支持泛型，我们可以限制在一个集合中只能放入同一种数据类型的元素
+                     三是Java访问集合总是通过统一的方式--迭代器，它最明显的好处在于无需知道集合内部元素是按什么方式存储的。
+5. 由于Java的集合设计非常久远，中间经历过大规模改进，我们要注意到有一小部分集合类是遗留类，不应该继续使用：
+Hashtable：一种线程安全的Map实现；
+Vector：一种线程安全的List实现；
+Stack：基于Vector实现的LIFO的栈。
+还有一小部分接口是遗留接口，也不应该继续使用：
+Enumeration<E>：已被Iterator<E>取代
+
+6. List是最基础的一种集合：它是一种有序链表
+在末尾添加一个元素：void add(E e)
+在指定索引添加一个元素：void add(int index, E e)
+删除指定索引的元素：int remove(int index)
+删除某个元素：int remove(Object e)
+获取指定索引的元素：E get(int index)
+获取链表大小（包含元素的个数）：int size()
+
+
+在List中查找元素时，List的实现类通过元素的equals()方法比较两个元素是否相等，因此，放入的元素必须正确覆写equals()方法，
+Java标准库提供的String、Integer等已经覆写了equals()方法；
+编写equals()方法可借助Objects.equals()判断。
+如果不在List中查找元素，就不必覆写equals()方法
+
+Map中不存在重复的key，因为放入相同的key，只会把原有的key-value对应的value给替换掉。
+
+要正确使用HashMap，作为key的类必须正确覆写equals()和hashCode()方法；
+一个类如果覆写了equals()，就必须覆写hashCode()，并且覆写规则是：
+如果equals()返回true，则hashCode()返回值必须相等；
+如果equals()返回false，则hashCode()返回值尽量不要相等。
+实现hashCode()方法可以通过Objects.hashCode()辅助方法实现。
+
+
+队列Queue实现了一个先进先出（FIFO）的数据结构：
+通过add()/offer()方法将元素添加到队尾；
+通过remove()/poll()从队首获取元素并删除；
+通过element()/peek()从队首获取元素但不删除。
+要避免把null添加到队列。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

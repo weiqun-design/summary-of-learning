@@ -1,0 +1,219 @@
+1、从单元测试到集成测试都可以应用testNG
+2、写test的三个步骤：1、写test业务逻辑，并在代码中插入TestNG
+                   2、在testng.xml文件中添加test
+                   3、运行testNG
+3、一套测试用例代表一个XML，可以包含一个或更多的test，使用suite tag
+   一个测试用例用<test>代表，可以包含一个或多个TestNG classes
+   一个testNG class是一个java类，包含至少一个TestNG注解，可以包含一个或多个test方法。
+   一个test方法是一个java方法，有@Test注解
+4、注解：
+@BeforeSuite 在某个suite中所有test运行之前运行
+@AfterSuite 在某个suite中所有test运行之后运行
+@BeforeTest 在对应test类下所有test方法运行前运行
+@AfterTest 在对应test类下所有test方法运行后运行
+@BeforeGroups  在一组test方法前运行
+@AfterGroups  在一组test方法运行后运行
+@BeforeClass  在当前测试类的第一个测试方法前运行
+@AfterClass  在当前测试类的第一个测试方法后运行
+@BeforeMethod 在测试方法前运行
+@AfterMethod  在测试方法后运行
+
+@DataProvider 可设置参数name，如果没有设置name，name的默认值为method的name，parallel，设置是否并行测试，默认是false
+@Factory      将一个方法标识为factory，返回一个为TestNG使用的Test 类，返回结果必须为Object[]
+@Listeners    定义listeners 继承自org.testng.ITestNGListener.
+@Parameters   定义如果传递参数进入Test方法
+@Test         标注一个类或方法为test的一部分
+
+
+@Test 参数  alwaysRun              如何设置为true，那么即使上一个methood失败，该test method依然运行
+           dataProvider            data provider的名字
+           dataProviderClass       查找data Provider的类，如果为设置的话，在当前类或基类查找，如果指定了data Provider，那么
+                                   data provider方法需要为静态方法
+           dependsOnGroups         方法所依赖的groups
+           dependsOnMethods        方法所依赖的方法
+           description             这个方法的描述
+           enabled                 该方法是否可用
+           expectedException       该test可能会抛出的exception，如果没有异常或者异常与此不同，那么此测试用例会被标记为失败
+           groups                  当前class或method所属于的group
+           invocationCount         应调用此方法的次数
+           invocationTimeOut       累计允许最大耗时
+           priority                test method的优先级，值越低，越早调用
+           successPercentage       该方法成功的预计百分比
+           singleThreaded          该参数只能在class级别上使用，如果设置为true，那么test class都会使用相同的线程。
+           timeout                 该方法苏勇最大时长
+           threadPoolSize          线程池中线程数量，如果invocationCount未被设置
+
+5、testng.xml
+ 有三种方式可以调用testNG：编写testng.xml文件
+                        使用ant
+                        命令行
+
+6、指定类的形式
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="Suite1" verbose="1" >
+  <test name="Nopackage" >
+    <classes>
+       <class name="NoPackageTest" />
+    </classes>
+  </test>
+
+  <test name="Regression1">
+    <classes>
+      <class name="test.sample.ParameterSample"/>
+      <class name="test.sample.ParameterTest"/>
+    </classes>
+  </test>
+</suite>
+
+7、指定包的形式
+
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="Suite1" verbose="1" >
+  <test name="Regression1"   >
+    <packages>
+      <package name="test.sample" />
+   </packages>
+ </test>
+</suite>
+
+8、指定group和method的形式
+<test name="Regression1">
+  <groups>
+    <run>
+      <exclude name="brokenTests"  />
+      <include name="checkinTests"  />
+    </run>
+  </groups>
+
+  <classes>
+    <class name="test.IndividualMethodsTest">
+      <methods>
+        <include name="testMethod" />
+      </methods>
+    </class>
+  </classes>
+</test>
+
+9、运行TestNG
+java org.testng.TestNG testng1.xml [testng2.xml testng3.xml ...]
+
+可选择参数              option                        argument                             含义
+                -configfailurepolicy              skip|continue                     在suite中如果一个@before方法失败后，后续是继续运行还是跳过，默认是skip
+                        -d                            目录                           指定reports生成地址，默认为test-output
+                -dataproviderthreadcount          使用dataprovider执行时默认的线程数    可以被suite定义时覆盖
+                -excludegroups                    逗号分隔的groups                    本次执行排除在外的groups
+                -groups                           逗号分隔的groups                    本次执行的groups
+                -listener                         classpath中的逗号分隔的Java class    指定test listeners，该类需要继承org.testng.ITestListener
+                -usedefaultlisteners              true|false                         是否使用默认的listeners
+                -methods                          逗号分隔的完整类名和方法名             指定运行单独方法
+                -methodselectors                  逗号分隔指定方法和类的优先级           如com.example.Selector1:3,com.example.Selector2:2
+                -parallel                         methods|tests|classes              如果多线程运行机制，默认情况下完全不使用多线程
+                -reporter                                                            用于自定义reporter
+                -sourcedir                                                           仅用于javadoc 类型的注解
+                -suitename                        test suite的name                    不常用
+                -testclass                        逗号分隔的class                      class files的列表
+                -testjar                                                             指定包含test classes的jar文件
+                -testname                         一个test默认的name                   通常使用suite.xml,不使用suite.xml
+                -testrunfactory                   classpath中的java classes            使用自定义的test runner，需继承org.testng.ITestRunnerFactory
+                -threadcount                      并发运行时，使用的线程数
+                -xmlpathinjar                     指定xml file的路径                    默认是testng.xml
+
+10、@Test 注解的测试方法的返回值通常被忽略，除非在testng中设置参数 allow-return-values="true"
+<suite allow-return-values="true">
+
+<test allow-return-values="true">
+
+11、可以同时为一个方法设置多个不同的group
+
+public class Test1 {
+  @Test(groups = { "functest", "checkintest" })
+  public void testMethod1() {
+  }
+
+  @Test(groups = {"functest", "checkintest"} )
+  public void testMethod2() {
+  }
+
+  @Test(groups = { "functest" })
+  public void testMethod3() {
+  }
+}
+
+12、使用.* 代表任意占位符
+<test name="Test1">
+  <groups>
+    <run>
+      <include name="windows.*"/>
+    </run>
+  </groups>
+
+  <classes>
+    <class name="example1.Test1"/>
+  </classes>
+</test>
+
+13、可以在类级别设置groups
+14、有两种方式可以为test method赋值参数，一种是从testng.xml,另一种是从程序中获得
+15、依赖有两种形式，一种为硬性依赖，被依赖的方法必须运行通过，才执行当前类
+                 另一种为软性依赖，被依赖的方法只要在当前类执行即可
+
+硬性依赖
+@Test
+public void serverStartedOk() {}
+
+@Test(dependsOnMethods = { "serverStartedOk" })
+public void method1() {}
+
+
+@Test(groups = { "init" })
+public void serverStartedOk() {}
+
+@Test(groups = { "init" })
+public void initEnvironment() {}
+
+@Test(dependsOnGroups = { "init.*" })
+public void method1() {}
+
+
+软性依赖
+当被依赖的方法为 mark为skip时，为软依赖
+
+16、可以在类的级别上添加test注解，这样该类下所有的public 方法均为test方法
+17、@Ignore与@Test(enabled=false) 相同
+18、多线程运行多个测试组时，可以使用如下命令，指定线程池
+java org.testng.TestNG -suitethreadpoolsize 3 testng1.xml testng2.xml testng3.xml
+
+<suite name="My suite" parallel="methods" thread-count="5">       # testNG 中每一个测试方法都会用单独的线程
+<suite name="My suite" parallel="tests" thread-count="5">         # 每一个<test>下的方法使用一个线程
+<suite name="My suite" parallel="classes" thread-count="5">       # 同一个类下的method使用一个线程
+<suite name="My suite" parallel="instances" thread-count="5">     # 同一个实例使用同一个线程
+
+19、当测试失败时，会生成一个testng-failed.xml, 这个文件可以方便重试
+java -classpath testng.jar;%CLASSPATH% org.testng.TestNG -d test-outputs testng.xml
+java -classpath testng.jar;%CLASSPATH% org.testng.TestNG -d test-outputs test-outputs\testng-failed.xml
+
+20、
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,113 @@
+java教程
+
+静态字段
+1. 实例字段在每个实例中都有自己的一个独立空间，但静态字段只有一个共享空间，所有实例都会共享该字段。
+2. 对于静态字段，无论修改哪个实例的静态字段，效果都是一样的；所有实例的静态字段都被修改了，原因是静态字段并不属于实例。
+3. 推荐使用类名来访问静态字段
+4. 由于interface是一个纯抽象类，所以它不能定义实例字段。但是interface是可以有静态字段的，并且静态字段必须为final类型
+
+包
+1. 位于同一个包的类，可以访问包作用域的字段和方法。不用public、protected、private修饰的字段和方法就是包作用域
+2. 当Java编译器最终编译出.class文件只使用完整类名，因此当编译器遇到一个class名称时：
+    如果是完整类名，就直接根据完整类名查找这个class
+    如果是简单类名，按照下面的顺序依次查找：
+        查找当前package是否存在这个class
+        查找import的包是否包含这个class
+        查找java.lang包是否包含这个class
+    如果还无法确定类名，则编译报错
+
+作用域
+public的class、interface可以被其他任何类访问
+定义为public的field、method可以被其他类访问，前提是首先有访问class的权限
+定义为private的field、method无法被其他类访问
+由于Java支持嵌套类，如果一个类内部定义了嵌套类，那么嵌套类拥有访问private的权限
+protected作用于继承关系。定义为protected的字段和方法可以被子类访问，以及子类的子类。
+
+package
+包作用域指一个类允许访问同一个package的没有public、private修饰的class，以及没有public、protected、private修饰的字段和方法。
+
+final
+final修饰的class可以阻止被继承
+用final修饰method可以阻止被子类覆写
+用final修饰field可以阻止被重新赋值
+用final修饰的局部变量可以阻止被重新赋值
+
+最佳实践
+如果不确定是否需要public，就不声明为public，即尽可能少地暴露对外的字段和方法
+把方法定义为package权限有助于测试，因为测试类和被测试类只要位于同一个package，测试代码就可以访问被测试类的package权限方法。
+一个.java文件只能包含一个public类，但可以包含多个非public类。如果有public类，文件名必须和public类的名字相同
+
+设置classpath
+java -cp ....
+如果没有设置系统环境变量，也没有传入-cp参数，那么JVM默认的classpath为.
+
+jar包实际上就是一个zip格式的压缩文件，相当于目录
+jar包里还可以包含一个特殊的/META-INF/MANIFEST.MF文件。
+在大型项目中，不可能手动编写MANIFEST.MF文件，再手动创建zip包。Maven可以非常方便地构建jar包
+
+JVM通过环境变量classpath决定搜索class的路径和顺序；
+不推荐设置系统环境变量classpath，始终建议通过-cp命令传入
+jar包相当于目录，可以包含很多.class文件，方便下载和使用
+MANIFEST.MF文件可以提供jar包的信息，如Main-Class，这样可以直接运行jar包
+
+模块
+从Java 9开始，JDK又引入类模块（Module）
+在Java 9之前，一个大型Java程序会生成自己的jar文件，同时引用依赖的第三方jar文件，而JVM自带的Java标准库，实际上也是以jar文件形式存放的，这个文件是rt.jar
+如果是自己开发的程序，除了一个自己的app.jar以外，还需要一堆第三方的jar包，运行一个Java程序，命令行为：
+java -cp app.jar:a.jar:b.jar:c.jar com.liaoxuefeng.sample.Main
+
+从Java 9开始，原有的Java标准库已经由一个巨大的rt.jar分拆称了几十个模块，这些模块以.jmod扩展名标识，可以在$JAVA_HOME/jmods目录下找到它们：
+这些.jmod文件每一个都是一个模块，模块名就是文件名
+模块之间的依赖关系已经被写入到模块内的module-info.class文件了，所有的模块都直接或间接地依赖java.base模块，只有java.base模块不依赖任何模块，它可以被看作是根模块，
+好比所有的类都是从object直接或间接继承而来。
+
+源码目录下多类一个module-info.java文件，这就是模块的描述文件。在这个模块中，
+module hello.world {
+	requires java.base; // 可不写，任何模块都会自动引入java.base
+	requires java.xml;
+}
+
+在根目录编译并创建模块
+javac -d bin src/module-info.java src/com/itranswarp/sample/*.java
+
+下一步需要把bin目录下的所有class文件先打包成jar，在打包的时候
+jar --create --file hello.jar --main-class com.itranswarp.sample.Main -C bin .
+
+可以直接使用命令java -jar hello.jar来运行，也可以继续使用JDK自带的jmod命令把一个jar包转换成模块：
+jmod create --class-path hello.jar hello.jmod
+
+可以用以下命令运行模块
+java --module-path hello.jar --module hello.world
+
+过去发布一个Java应用程序，必须下载一个完整的JRE，再运行jar包。而完整的JRE块头很大，执行以下命令可以生成一个完整的并且带有自己hello.jmod模块的JRE
+jlink --module-path hello.jmod --add-modules java.base,java.xml,hello.world --output jre/
+运行JRE
+jre/bin/java --module hello.world
+要发布应用程序，只需要把这个jre目录发送过去即可，对方直接运行上述命令即可，既不用下载安装JDK，也不用直到如何配置我们自己的模块，极大地方便来分发和部署。
+
+模块间访问时，如a模块要访问b模块的某个class，必要条件是b模块明确地导出来可以访问的包。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

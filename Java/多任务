@@ -1,0 +1,215 @@
+
+实现多任务的方法，有以下几种：
+多进程模式（每个进程一个线程）
+多线程模式（一个进程有多个线程）
+多进程 + 多线程模式
+
+和多线程相比，多进程的缺点在于：
+创建进程比创建线程开销大，尤其是在windows系统上；
+进程间通信比线程间通信要慢，因为线程间通信就是读写同一个变量，速度很快。
+多进程的优点在于：
+多进程稳定性比多线程高，因为在多进程的情况下，一个进程崩溃不会影响其他进程，而在多线程的情况下，任何一个线程崩溃会直接导致整个进程崩溃。
+
+多线程：
+Java语言内置了多线程支持：一个Java程序实际上是一个JVM进程，JVM进程用一个主线程来执行main方法，在main方法内部，我们又可以启动多个线程。此外，
+JVM还有负责垃圾回收的其他工作线程等。
+
+因此对于大多数Java程序来说，多任务实际上通过多线程实现。
+多线程编程的特点在于：多线程经常需要读写共享数据，并且需要同步。因此多线程的编程复杂度高，调试更困难。
+Java多线程编程的特点又在于：
+多线程模型是Java程序最基本的并发模型；
+后续读写网络、数据库、web开发等都依赖Java多线程模型。
+
+
+多线程的几种方式
+一、从Thread派生一个自定义类，然后覆写run()方法
+二、创建Thread时，传入一个Runnable实例
+三、使用lambda方式定义
+
+可以对线程设定优先集，设定优先级的方法是：Thread.setPriority(int n)
+优先级高的线程被操作系统调度的优先级高，操作系统对高优先级线程可能调度更频繁，但我们不能通过设置优先级来确保高优先级的线程一定会先执行。
+
+Java的线程的状态有以下几种：
+New: 新创建的线程，尚未执行；
+Runnable：运行中的线程，正在执行run()的Java代码
+Blocked: 运行中的线程，因为某些操作被阻塞而挂起；
+Waiting：运行中的线程，因为某些操作在等待中；
+Timed Waiting：运行中的线程，因为执行sleep()方法正在计时等待；
+Terminated：线程已终止，因为run()方法执行完毕。
+
+线程终止的原因有：
+线程正常终止：run()方法执行到return语句返回；
+线程意外终止：run()方法因为未捕获的异常导致线程终止；
+对某个线程的Thread实例调用stop（）方法强制终止（强烈不推荐使用）
+
+调用t.interrupt()方法可以让线程中断
+另一个常用的中断线程的方法是设置标志位running
+public volatile boolean running
+
+volatile关键字的目的是告诉虚拟机：
+每次访问变量时，总是获取主内存的最新值；
+每次修改变量后，立刻回写到主内存
+
+volatile关键字解决的是可见性问题：当一个线程修改了某个共享变量的值，其他线程能够立刻看到修改后的值。
+
+Java程序入口就是由JVM启动main线程，main线程又可以启动其他线程。当所有线程都运行结束时，JVM退出，进程结束。
+如果有一个线程没有退出，JVM进程就不会退出。所以，必须保证所有线程都能及时结束。
+但是有一种线程的目的就是无线循环，例如一个定时触发任务的线程
+这类线程经常没有负责人来负责结束它们。但是，当其他线程结束时，JVM进程又必须要结束。
+答案是使用守护线程，守护线程是为其他线程服务的线程。在JVM中，所有非守护线程都执行完毕后，无论有没有守护线程，虚拟机都会自动退出。
+因此，JVM退出时，不必关心守护线程是否已结束
+在守护线程中，编写代码要注意：守护线程不能持有任何需要关闭的资源，例如打开文件等，因为虚拟机退出时，守护线程没有任何机会来关闭文件，这会
+导致数据丢失。
+
+保证一段代码的原子性就是通过加锁和解锁实现的, Java程序使用synchronized关键子对一个对象进行加锁
+使用synchroized解决了多线程同步访问共享变量的正确性问题。但是它的缺点是带来了性能下降。因为synchronized代码块无法并发执行。此外加锁和解锁
+需要消耗一定的时间。
+在使用synchroized无需担心抛出异常，因为无论是否有异常，都会在synchronized结束处正确释放锁。
+因为JVM只保证同一个锁在任意时刻只能被一个线程获取，但两个不同的锁在同一时刻可以被两个线程分别获取
+
+JVM规范定义了几种原子操作：
+基本类型（long和double除外）赋值，例如：int n = m；
+引用类型赋值，例如：List<String> list = anotherList
+如果一个类被设计为允许多线程正确访问，我们就说这个类就是“线程安全”的（thread-safe），上面的Counter类就是线程安全的。Java标准库的java.lang.StringBuffer也是线程安全的。
+还有一些不变类，例如String，Integer，LocalDate，它们的所有成员变量都是final，多线程同时访问时只能读不能写，这些不变类也是线程安全的。
+
+最后，类似Math这些只提供静态方法，没有成员变量的类，也是线程安全的。
+用synchronized修饰方法可以把整个方法变为同步代码块，synchronized方法加锁对象是this；
+通过合理的设计和数据封装可以让一个类变为“线程安全”；
+一个类没有特殊说明，默认不是thread-safe；
+
+
+JVM允许同一个线程重复获取同一个锁，这种能被同一个线程反复获取的锁，就叫做可重入锁。
+由于Java的线程锁是可重入锁，所以，获取锁的时候，不但要判断是否是第一次获取，还要记录这是第几次获取。
+每获取一次锁，记录+1，每退出synchronized块，记录-1，减到0的时候，才会真正释放锁。
+
+此时，两个线程各自持有不同的锁，然后各自试图获取对方手里的锁，造成了双方无限等待下去，这就是死锁。
+死锁发生后，没有任何机制能解除死锁，只能强制结束JVM进程。
+因此，在编写多线程应用时，要特别注意防止死锁。因为死锁一旦形成，就只能强制结束进程。
+
+Queue<String> queue = new LinkedList<>();
+
+    public synchronized void addTask(String s) {
+        this.queue.add(s);
+        this.notify();
+    }
+
+    public synchronized String getTask() throws InterruptedException {
+        while (queue.isEmpty()) {
+            this.wait();
+        }
+        return queue.remove();
+    }
+
+wait()方法会释放获得的锁，wait()方法返回后，线程又回重新试图获得锁。
+
+
+wait和notify用于多线程协调运行：
+在synchronized内部可以调用wait()使线程进入等待状态；
+必须在已获得的锁对象上调用wait()方法；
+在synchronized内部可以调用notify()或notifyAll()唤醒其他等待线程；
+必须在已获得的锁对象上调用notify()或notifyAll()方法；
+已唤醒的线程还需要重新获得锁后才能继续执行
+
+
+ReentrantLock可以替代synchronized进行同步；
+ReentrantLock获取锁更安全；
+必须先获取到锁，再进入try {...}代码块，最后使用finally保证释放锁；
+可以使用tryLock()尝试获取锁
+
+Condition提供的await()、signal()、signalAll()原理和synchronized锁对象的wait()、notify()、notifyAll()是一致的，并且其行为也是一样的：
+await()会释放当前锁，进入等待状态；
+signal()会唤醒某个等待线程；
+signalAll()会唤醒所有等待线程；
+唤醒线程从await()返回后需要重新获得锁。
+此外，和tryLock()类似，await()可以在等待指定时间后，如果还没有被其他线程通过signal()或signalAll()唤醒，可以自己醒来
+
+使用ReadWriteLock可以提高读取效率：
+ReadWriteLock只允许一个线程写入；
+ReadWriteLock允许多个线程在没有写入时同时读取；
+ReadWriteLock适合读多写少的场景。
+ReadWriteLock的读锁是一种悲观的读锁。
+
+和ReadWriteLock相比，写入的加锁是完全一样的，不同的是读取。注意到首先我们通过tryOptimisticRead()获取一个乐观读锁，并返回版本号。
+接着进行读取，读取完成后，我们通过validate()去验证版本号，如果在读取过程中没有写入，版本号不变，验证成功，我们就可以放心地继续后续操作。
+如果在读取过程中有写入，版本号会发生变化，验证将失败。在失败的时候，我们再通过获取悲观读锁再次读取。由于写入的概率不高，程序在绝大部分情况
+下可以通过乐观读锁获取数据，极少数情况下使用悲观读锁获取数据。和ReadWriteLock相比，写入的加锁是完全一样的，不同的是读取。注意到首先我们
+通过tryOptimisticRead()获取一个乐观读锁，并返回版本号。接着进行读取，读取完成后，我们通过validate()去验证版本号，如果在读取过程中没有
+写入，版本号不变，验证成功，我们就可以放心地继续后续操作。如果在读取过程中有写入，版本号会发生变化，验证将失败。在失败的时候，我们再通过获
+取悲观读锁再次读取。由于写入的概率不高，程序在绝大部分情况下可以通过乐观读锁获取数据，极少数情况下使用悲观读锁获取数据。
+
+
+使用java.util.concurrent包提供的线程安全的并发集合可以大大简化多线程编程：
+多线程同时读写并发集合是安全的；
+尽量使用Java标准库提供的并发集合，避免自己编写同步代码。
+
+除了BlockingQueue外，针对List、Map、Set、Deque等，java.util.concurrent包也提供了对应的并发集合类。我们归纳一下：
+
+interface	    non-thread-safe	                           thread-safe
+List	          ArrayList	                          CopyOnWriteArrayList
+Map	               HashMap	                            ConcurrentHashMap
+Set	             HashSet / TreeSet	                    CopyOnWriteArraySet
+Queue	       ArrayDeque / LinkedList	         ArrayBlockingQueue / LinkedBlockingQueue
+Deque	     ArrayDeque / LinkedList	                LinkedBlockingDeque
+
+
+使用java.util.concurrent.atomic提供的原子操作可以简化多线程编程：
+原子操作实现了无锁的线程安全；
+适用于计数器，累加器等。
+
+JDK提供了ExecutorService实现了线程池功能：
+线程池内部维护一组线程，可以高效执行大量小任务；
+Executors提供了静态方法创建不同类型的ExecutorService；
+必须调用shutdown()关闭ExecutorService；
+ScheduledThreadPool可以定期调度多个任务
+
+可见CompletableFuture的优点是：
+异步任务结束时，会自动回调某个对象的方法；
+异步任务出错时，会自动回调某个对象的方法；
+主线程设置好回调后，不再关心异步任务的执行。
+
+CompletableFuture可以指定异步处理流程：
+thenAccept()处理正常结果；
+exceptional()处理异常结果；
+thenApplyAsync()用于串行化另一个CompletableFuture；
+anyOf()和allOf()用于并行化多个CompletableFuture。
+
+核心代码SumTask继承自RecursiveTask，在compute()方法中，关键是如何“分裂”出子任务并且提交子任务：
+class SumTask extends RecursiveTask<Long> {
+    protected Long compute() {
+        // “分裂”子任务:
+        SumTask subtask1 = new SumTask(...);
+        SumTask subtask2 = new SumTask(...);
+        // invokeAll会并行运行两个子任务:
+        invokeAll(subtask1, subtask2);
+        // 获得子任务的结果:
+        Long result1 = fork1.join();
+        Long result2 = fork2.join();
+        // 汇总结果:
+        return result1 + result2;
+    }
+}
+
+
+ThreadLocal表示线程的“局部变量”，它确保每个线程的ThreadLocal变量都是各自独立的；
+ThreadLocal适合在一个线程的处理流程中保持上下文（避免了同一参数在所有方法中传递）；
+使用ThreadLocal要用try ... finally结构，并在finally中清除。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

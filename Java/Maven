@@ -1,0 +1,98 @@
+Maven就是专门为Java项目打造的管理和构建工具，它的主要功能有：
+提供了一套标准化的项目结构；
+提供了一套标准化的构建流程（编译、测试、打包、发布...)
+提供了一套依赖管理机制。
+
+Maven管理的普通的Java项目
+a-maven-project
+├── pom.xml
+├── src
+│   ├── main
+│   │   ├── java
+│   │   └── resources
+│   └── test
+│       ├── java
+│       └── resources
+└── target
+
+Maven是一个Java项目的管理和构建工具：
+
+Maven使用pom.xml定义项目内容，并使用预设的目录结构；
+在Maven中声明一个依赖项可以自动下载并导入classpath；
+Maven使用groupId，artifactId和version唯一定位一个依赖。
+
+Maven定义了几种依赖关系，分别是compile、test、runtime和provided
+
+scope	        说明	                                            示例
+compile	        编译时需要用到该jar包（默认）	                    commons-logging
+test	        编译Test时需要用到该jar包	                        junit
+runtime	        编译时不需要，但运行时需要用到	                    mysql
+provided	    编译时需要用到，但运行时由JDK或某个服务器提供	        servlet-api
+
+其中默认的compile是最常用的，maven会把这种类型的依赖直接放入classpath
+
+一个jar包一旦被下载过，就会被Maven自动缓存在本地目录，所以，除了第一次编译时因为下载需要时间会比较慢。后续过程因为有本地缓存，并不会重复下载
+相同的jar包。
+
+唯一ID
+对于某个依赖，Maven只需要3个变量即可唯一确定某个jar包：
+groupId：属于组织的名称，类似Java的包名；
+artifactId：该jar包自身的名称，类似Java的类名；
+version：该jar包的版本
+
+中国区用户可以使用阿里云提供的Maven镜像仓库。使用Maven镜像仓库需要一个配置，在用户主目录下进入.m2目录，创建一个settings.xml配置文件，内容如下：
+
+<settings>
+    <mirrors>
+        <mirror>
+            <id>aliyun</id>
+            <name>aliyun</name>
+            <mirrorOf>central</mirrorOf>
+            <!-- 国内推荐阿里云的Maven镜像 -->
+            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+        </mirror>
+    </mirrors>
+</settings>
+
+搜索第三方组件
+最后一个问题：如果我们要引用一个第三方组件，比如okhttp，如何确切地获得它的groupId、artifactId和version？
+方法是通过search.maven.org搜索关键字，找到对应的组件后，直接复制：
+
+
+Maven通过lifecycle、phase和goal来提供标准的构建流程。
+最常用的构建命令是指定phase，然后让Maven执行到指定的phase：
+mvn clean
+mvn clean compile
+mvn clean test
+mvn clean package
+通常情况，我们总是执行phase默认绑定的goal，因此不必指定goal
+
+Maven支持模块化管理，可以把一个大项目拆成几个模块：
+可以通过继承在parent的pom.xml统一定义重复配置；
+可以通过<modules>编译多个模块
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

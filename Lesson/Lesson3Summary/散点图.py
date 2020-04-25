@@ -9,6 +9,6 @@ y = np.random.randn(N)
 
 plt.scatter(x, y, marker='x')
 plt.show()
-df = pd.DataFrame({'x':x,'y':y})
-sns.jointplot(x='x',y='y',data=df,kind='scatter')
+df = pd.DataFrame({'x': x, 'y': y})
+sns.jointplot(x='x', y='y', data=df, kind='scatter')
 plt.show()

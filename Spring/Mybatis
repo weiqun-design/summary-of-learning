@@ -1,0 +1,144 @@
+1、 MyBatis是一款优秀的持久层框架，它支持自定义SQL、存储过程以及高级映射。MyBatis免除了几乎所有的JDBC代码以及设置参数和获取结果集的工作。
+MyBatis可以通过简单的XML或注解来配置和映射原始类型、接口和Java POJO （Plain Old Java Objects，普通老式 Java 对象）为数据库中的记录。
+
+2、每个基于MyBatis的应用都是以一个SqlSessionFactory的实例为核心的。SqlSessionFactory的实例可以通过SqlSessionFactoryBuilder获得。
+而SqlSessionFactoryBuilder则可以从XML配置文件或一个预先配置的Configuration实例来构建出SqlSessionFactory实例。
+
+3. MyBatis 的配置文件包含了会深深影响 MyBatis 行为的设置和属性信息。 配置文档的顶层结构如下：
+configuration（配置）
+    properties（属性）
+    settings（设置）
+    typeAliases（类型别名）
+    typeHandlers（类型处理器）
+    objectFactory（对象工厂）
+    plugins（插件）
+    environments（环境配置）
+        environment（环境变量）
+        transactionManager（事务管理器）
+        dataSource（数据源）
+    databaseIdProvider（数据库厂商标识）
+    mappers（映射器）
+
+4、如果一个属性在不只一个地方进行了配置，那么，MyBatis 将按照下面的顺序来加载：
+首先读取在 properties 元素体内指定的属性。
+然后根据 properties 元素中的 resource 属性读取类路径下属性文件，或根据 url 属性指定的路径读取属性文件，并覆盖之前读取过的同名属性。
+最后读取作为方法参数传递的属性，并覆盖之前读取过的同名属性。
+因此，通过方法参数传递的属性具有最高优先级，resource/url 属性中指定的配置文件次之，最低优先级的则是 properties 元素中指定的属性。
+
+5、属性
+<properties resource="org/mybatis/example/config.properties">
+  <property name="username" value="dev_user"/>
+  <property name="password" value="F2Fa3!33TYyg"/>
+</properties>
+
+6、设置名	                  描述	                                              有效值	                             默认值
+cacheEnabled	              全局性地开启或关闭所有映射器配置文件中已配置的任何缓存。	  true | false	                     true
+lazyLoadingEnabled	延迟加载的全局开关。当开启时，所有关联对象都会延迟加载。 特定关联关系中可通过设置 fetchType 属性来覆盖该项的开关状态。	true | false	false
+aggressiveLazyLoading	开启时，任一方法的调用都会加载该对象的所有延迟加载属性。 否则，每个延迟加载属性会按需加载（参考 lazyLoadTriggerMethods)。	true | false	false （在 3.4.1 及之前的版本中默认为 true）
+multipleResultSetsEnabled	是否允许单个语句返回多结果集（需要数据库驱动支持）。	true | false	true
+useColumnLabel	使用列标签代替列名。实际表现依赖于数据库驱动，具体可参考数据库驱动的相关文档，或通过对比测试来观察。	true | false	true
+useGeneratedKeys	允许 JDBC 支持自动生成主键，需要数据库驱动支持。如果设置为 true，将强制使用自动生成主键。尽管一些数据库驱动不支持此特性，但仍可正常工作（如 Derby）。	true | false	False
+autoMappingBehavior	指定 MyBatis 应如何自动映射列到字段或属性。 NONE 表示关闭自动映射；PARTIAL 只会自动映射没有定义嵌套结果映射的字段。 FULL 会自动映射任何复杂的结果集（无论是否嵌套）。	NONE, PARTIAL, FULL	PARTIAL
+autoMappingUnknownColumnBehavior	指定发现自动映射目标未知列（或未知属性类型）的行为。
+NONE: 不做任何反应
+WARNING: 输出警告日志（'org.apache.ibatis.session.AutoMappingUnknownColumnBehavior' 的日志等级必须设置为 WARN）
+FAILING: 映射失败 (抛出 SqlSessionException)
+NONE, WARNING, FAILING	NONE
+defaultExecutorType	配置默认的执行器。SIMPLE 就是普通的执行器；REUSE 执行器会重用预处理语句（PreparedStatement）； BATCH 执行器不仅重用语句还会执行批量更新。	SIMPLE REUSE BATCH	SIMPLE
+defaultStatementTimeout	设置超时时间，它决定数据库驱动等待数据库响应的秒数。	任意正整数	未设置 (null)
+defaultFetchSize	为驱动的结果集获取数量（fetchSize）设置一个建议值。此参数只可以在查询设置中被覆盖。	任意正整数	未设置 (null)
+defaultResultSetType	指定语句默认的滚动策略。（新增于 3.5.2）	FORWARD_ONLY | SCROLL_SENSITIVE | SCROLL_INSENSITIVE | DEFAULT（等同于未设置）	未设置 (null)
+safeRowBoundsEnabled	是否允许在嵌套语句中使用分页（RowBounds）。如果允许使用则设置为 false。	true | false	False
+safeResultHandlerEnabled	是否允许在嵌套语句中使用结果处理器（ResultHandler）。如果允许使用则设置为 false。	true | false	True
+mapUnderscoreToCamelCase	是否开启驼峰命名自动映射，即从经典数据库列名 A_COLUMN 映射到经典 Java 属性名 aColumn。	true | false	False
+localCacheScope	MyBatis 利用本地缓存机制（Local Cache）防止循环引用和加速重复的嵌套查询。 默认值为 SESSION，会缓存一个会话中执行的所有查询。 若设置值为 STATEMENT，本地缓存将仅用于执行语句，对相同 SqlSession 的不同查询将不会进行缓存。	SESSION | STATEMENT	SESSION
+jdbcTypeForNull	当没有为参数指定特定的 JDBC 类型时，空值的默认 JDBC 类型。 某些数据库驱动需要指定列的 JDBC 类型，多数情况直接用一般类型即可，比如 NULL、VARCHAR 或 OTHER。	JdbcType 常量，常用值：NULL、VARCHAR 或 OTHER。	OTHER
+lazyLoadTriggerMethods	指定对象的哪些方法触发一次延迟加载。	用逗号分隔的方法列表。	equals,clone,hashCode,toString
+defaultScriptingLanguage	指定动态 SQL 生成使用的默认脚本语言。	一个类型别名或全限定类名。	org.apache.ibatis.scripting.xmltags.XMLLanguageDriver
+defaultEnumTypeHandler	指定 Enum 使用的默认 TypeHandler 。（新增于 3.4.5）	一个类型别名或全限定类名。	org.apache.ibatis.type.EnumTypeHandler
+callSettersOnNulls	指定当结果集中值为 null 的时候是否调用映射对象的 setter（map 对象时为 put）方法，这在依赖于 Map.keySet() 或 null 值进行初始化时比较有用。注意基本类型（int、boolean 等）是不能设置成 null 的。	true | false	false
+returnInstanceForEmptyRow	当返回行的所有列都是空时，MyBatis默认返回 null。 当开启这个设置时，MyBatis会返回一个空实例。 请注意，它也适用于嵌套的结果集（如集合或关联）。（新增于 3.4.2）	true | false	false
+logPrefix	指定 MyBatis 增加到日志名称的前缀。	任何字符串	未设置
+logImpl	指定 MyBatis 所用日志的具体实现，未指定时将自动查找。	SLF4J | LOG4J | LOG4J2 | JDK_LOGGING | COMMONS_LOGGING | STDOUT_LOGGING | NO_LOGGING	未设置
+proxyFactory	指定 Mybatis 创建可延迟加载对象所用到的代理工具。	CGLIB | JAVASSIST	JAVASSIST （MyBatis 3.3 以上）
+vfsImpl	指定 VFS 的实现	自定义 VFS 的实现的类全限定名，以逗号分隔。	未设置
+useActualParamName	允许使用方法签名中的名称作为语句参数名称。 为了使用该特性，你的项目必须采用 Java 8 编译，并且加上 -parameters 选项。（新增于 3.4.1）	true | false	true
+configurationFactory	指定一个提供 Configuration 实例的类。 这个被返回的 Configuration 实例用来加载被反序列化对象的延迟加载属性值。 这个类必须包含一个签名为static Configuration getConfiguration() 的方法。（新增于 3.2.3）	一个类型别名或完全限定类名。	未设置
+
+
+XML映射器
+
+SQL 映射文件只有很少的几个顶级元素（按照应被定义的顺序列出）：
+cache – 该命名空间的缓存配置。
+cache-ref – 引用其它命名空间的缓存配置。
+resultMap – 描述如何从数据库结果集中加载对象，是最复杂也是最强大的元素。
+sql – 可被其它语句引用的可重用语句块。
+insert – 映射插入语句。
+update – 映射更新语句。
+delete – 映射删除语句。
+select – 映射查询语句
+
+<select id="selectPerson" parameterType="int" resultType="hashmap">
+  SELECT * FROM PERSON WHERE ID = #{id}
+</select>
+
+<select
+  id="selectPerson"
+  parameterType="int"
+  parameterMap="deprecated"
+  resultType="hashmap"
+  resultMap="personResultMap"
+  flushCache="false"
+  useCache="true"
+  timeout="10"
+  fetchSize="256"
+  statementType="PREPARED"
+  resultSetType="FORWARD_ONLY">
+
+id	在命名空间中唯一的标识符，可以被用来引用这条语句。
+parameterType	将会传入这条语句的参数的类全限定名或别名。这个属性是可选的，因为 MyBatis 可以通过类型处理器（TypeHandler）推断出具体传
+入语句的参数，默认值为未设置（unset）。
+resultType	期望从这条语句中返回结果的类全限定名或别名。 注意，如果返回的是集合，那应该设置为集合包含的类型，而不是集合本身的类型。 resultType 和 resultMap 之间只能同时使用一个。
+resultMap	对外部 resultMap 的命名引用。结果映射是 MyBatis 最强大的特性，如果你对其理解透彻，许多复杂的映射问题都能迎刃而解。 resultType 和 resultMap 之间只能同时使用一个。
+flushCache	将其设置为 true 后，只要语句被调用，都会导致本地缓存和二级缓存被清空，默认值：false。
+useCache	将其设置为 true 后，将会导致本条语句的结果被二级缓存缓存起来，默认值：对 select 元素为 true。
+timeout	这个设置是在抛出异常之前，驱动程序等待数据库返回请求结果的秒数。默认值为未设置（unset）（依赖数据库驱动）。
+fetchSize	这是一个给驱动的建议值，尝试让驱动程序每次批量返回的结果行数等于这个设置值。 默认值为未设置（unset）（依赖驱动）。
+statementType	可选 STATEMENT，PREPARED 或 CALLABLE。这会让 MyBatis 分别使用 Statement，PreparedStatement 或 CallableStatement，默认值：PREPARED。
+resultSetType	FORWARD_ONLY，SCROLL_SENSITIVE, SCROLL_INSENSITIVE 或 DEFAULT（等价于 unset） 中的一个，默认值为 unset （依赖数据库驱动）。
+databaseId	如果配置了数据库厂商标识（databaseIdProvider），MyBatis 会加载所有不带 databaseId 或匹配当前 databaseId 的语句；如果带和不带的语句都有，则不带的会被忽略。
+resultOrdered	这个设置仅针对嵌套结果 select 语句：如果为 true，将会假设包含了嵌套结果集或是分组，当返回一个主结果行时，就不会产生对前面结果集的引用。 这就使得在获取嵌套结果集的时候不至于内存不够用。默认值：false。
+resultSets	这个设置仅适用于多结果集的情况。它将列出语句执行后返回的结果集并赋予每个结果集一个名称，多个名称之间以逗号分隔。
+
+默认情况下，使用 #{} 参数语法时，MyBatis 会创建 PreparedStatement 参数占位符，并通过占位符安全地设置参数（就像使用 ? 一样）。
+这样做更安全，更迅速，通常也是首选做法，不过有时你就是想直接在 SQL 语句中直接插入一个不转义的字符串。 比如 ORDER BY 子句，这时候你可以：
+ORDER BY ${columnName}
+
+
+
+dataSource的类型可以配置成其内置类型之一，如UNPOOLED，POOLED，JNDI
+如果将类型设置成UNPOOLED，Mybatis会为每一个数据库草毮做创建一个新的连接，并关闭它。该方式适用于只有小规模数量比昂发用户的简单应用程序上。
+如果将类型设置成POOLED，Mybatis会创建一个数据库连接池，连接池中的一个连接会被用作数据库操作，一旦数据库操作完成，MyBatis会将此连接返回给连接池。
+在开发或测试环境中，经常使用此种方式。
+如果将类型设置成JNDI，MyBatis从应用服务器向配置好的JNDI数据源dataSource获取数据库连接。在生产环境中，优先考虑这种方式。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

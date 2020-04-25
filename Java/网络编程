@@ -1,0 +1,95 @@
+TCP/IP协议泛指互联网协议，其中最重要的两个协议是TCP协议和IP协议。只有使用TCP/IP协议的计算机才能够联入互联网，
+使用其他网络协议（例如NetBIOS、AppleTalk协议等）是无法联入互联网的。
+
+在互联网中，一个IP地址用于唯一标识一个网络接口（Network Interface）。一台联入互联网的计算机肯定有一个IP地址，但也可能有多个IP地址。
+IP地址分为IPv4和IPv6两种。IPv4采用32位地址，类似101.202.99.12，而IPv6采用128位地址，类似2001:0DA8:100A:0000:0000:1020:F2F3:1428。
+IPv4地址总共有232个（大约42亿），而IPv6地址则总共有2128个（大约340万亿亿亿亿），IPv4的地址目前已耗尽，而IPv6的地址是根本用不完的。
+
+IP地址又分为公网IP地址和内网IP地址。公网IP地址可以直接被访问，内网IP地址只能在内网访问。内网IP地址类似于：
+192.168.x.x
+10.x.x.x
+有一个特殊的IP地址，称之为本机地址，它总是127.0.0.1。
+
+如果两台计算机位于同一个网络，那么他们之间可以直接通信，因为他们的IP地址前段是相同的，也就是网络号是相同的。网络号是IP地址通过子网掩码过滤后得到的。例如：
+某台计算机的IP是101.202.99.2，子网掩码是255.255.255.0，那么计算该计算机的网络号是：
+IP = 101.202.99.2
+Mask = 255.255.255.0
+Network = IP & Mask = 101.202.99.0
+
+
+IP协议是一个分组交换，它不保证可靠传输。而TCP协议是传输控制协议，它是面向连接的协议，支持可靠传输和双向通信。
+TCP协议是建立在IP协议之上的，简单地说，IP协议只负责发数据包，不保证顺序和正确性，而TCP协议负责控制数据包传输，
+它在传输数据之前需要先建立连接，建立连接后才能传输数据，传输完后还需要断开连接。
+TCP协议之所以能保证数据的可靠传输，是通过接收确认、超时重传这些机制实现的。并且，TCP协议允许双向通信，即通信双方可以同时发送和接收数据。
+TCP协议也是应用最广泛的协议，许多高级协议都是建立在TCP协议之上的，例如HTTP、SMTP等。
+UDP协议（User Datagram Protocol）是一种数据报文协议，它是无连接协议，不保证可靠传输。因为UDP协议在通信前不需要建立连接，
+因此它的传输效率比TCP高，而且UDP协议比TCP协议要简单得多。
+选择UDP协议时，传输的数据通常是能容忍丢失的，例如，一些语音视频通信的应用会选择UDP协议
+
+一个Socket就是由IP地址和端口号（范围是0～65535）组成，可以把Socket简单理解为IP地址加端口号。端口号总是由操作系统分配，
+它是一个0～65535之间的数字，其中，小于1024的端口属于特权端口，需要管理员权限，大于1024的端口可以由任意用户的应用程序打开。
+
+
+使用Java进行TCP编程时，需要使用Socket模型：
+服务器端用ServerSocket监听指定端口；
+客户端使用Socket(InetAddress, port)连接服务器；
+服务器端用accept()接收连接并返回Socket；
+双方通过Socket打开InputStream/OutputStream读写数据；
+服务器端通常使用多线程同时处理多个客户端连接，利用线程池可大幅提升效率；
+flush()用于强制输出缓冲区到网络。
+
+
+使用UDP协议通信时，服务器和客户端双方无需建立连接：
+服务器端用DatagramSocket(port)监听端口；
+客户端使用DatagramSocket.connect()指定远程地址和端口；
+双方通过receive()和send()读写数据；
+DatagramSocket没有IO流接口，数据被直接写入byte[]缓冲区。
+
+
+我们把类似Outlook这样的邮件软件称为MUA：Mail User Agent，意思是给用户服务的邮件代理；
+邮件服务器则称为MTA：Mail Transfer Agent，意思是邮件中转的代理；
+最终到达的邮件服务器称为MDA：Mail Delivery Agent，意思是邮件到达的代理。
+
+MUA到MTA发送邮件的协议就是SMTP协议，它是Simple Mail Transport Protocol的缩写，使用标准端口25，也可以使用加密端口465或587。
+
+
+QQ邮箱：SMTP服务器是smtp.qq.com，端口是465/587；
+163邮箱：SMTP服务器是smtp.163.com，端口是465；
+Gmail邮箱：SMTP服务器是smtp.gmail.com，端口是465/587
+
+
+
+首先，我们需要创建一个Maven工程，并把JavaMail相关的两个依赖加入进来：
+
+<dependencies>
+    <dependency>
+        <groupId>javax.mail</groupId>
+        <artifactId>javax.mail-api</artifactId>
+        <version>1.6.2</version>
+    </dependency>
+    <dependency>
+        <groupId>com.sun.mail</groupId>
+        <artifactId>javax.mail</artifactId>
+        <version>1.6.2</version>
+    </dependency>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

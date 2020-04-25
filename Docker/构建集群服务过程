@@ -14,6 +14,9 @@ SWMTKN-1-2s4ujmvwslb9eb7z2hswcnfxf1d1eox0ovgtx2pwhjhwby512m-3pzg8q01mwiyu7nz61v4
     VOLUME /app/logs
     EXPOSE 8080
     CMD ["bash", "startup.sh"]
+
 3. 执行gradle clean build -x test构建jar包
-
-
+4. 执行gradle publish -PgitBranch=STAGING -PautoPublish=true
+5. 将exec java \$JAVA_OPTS -jar /app/$m.jar"写入startup.sh文件
+6. 执行startup.sh
+7.
