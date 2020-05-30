@@ -1,0 +1,111 @@
+1. activity是用户可以执行的单一任务。Activity负责创建新的窗口供应用绘制和从系统中接受事件。Activity是用Java编写的，拓展自Activity类
+视图是Android UI框架中的类。他们占据了屏幕的方形区域，负责绘制并处理事件。Activity通过读取XML布局文件确定要创建哪些视图（并放在何处）。这些
+XML文件存储在layouts的res文件夹内
+
+2. 视图分为两大类别。
+第一种类型是UI组件，通常具有互动性。如
+TextView    在屏幕上创建文本；通常是非互动性文本
+EditText    在屏幕上可以输入文本
+ImageView   在屏幕上创建图片
+Button      在屏幕上创建按钮
+Chromometer 在屏幕上创建简单的计时器
+
+第二种类型是布局或容器视图，扩展自ViewGroup类
+LinearLayout
+RelativeLayout
+FrameLayout        ViewGroup包含一个子视图
+ScrollView         一种FrameLayout，旨在让用户能够在视图中滚动查看内容
+ConstraintLayout   可以灵活地放置视图
+
+3. setContentView() 方法会拓展布局，本质上是Android会读取你的XML文件并为你的布局文件中的每个标记生成Java对象
+4. 日志为Log.i(tag,message) 其中tag最好用类名，以方便定位
+5. 创建toast的方法 Toast.makeText(MainActivity.this,"you have clicked",Toast.LENGTH_LONG).show();
+6. 创建menu后，需重写两个方法
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+        if (itemId == R.id.action_search) {
+            Toast.makeText(MainActivity.this,"you have clicked",Toast.LENGTH_LONG).show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+7. 构建URL的方法
+    public static URL buildUrl(String githubSearchQuery) {
+        Uri uri = Uri.parse(GITHUB_BASE_URL).buildUpon().
+                appendQueryParameter(PARAM_QUERY, githubSearchQuery).
+                appendQueryParameter(PARAM_SORT,sortBy).build();
+        URL url = null;
+        try {
+            url = new URL(uri.toString());
+        } catch(MalformedURLException e){
+            e.printStackTrace();
+        }
+        return url;
+    }
+
+8. AsyncTask的执行步骤，首先在UI线程上调用onPreExecute，
+然后在另一个线程上调用doInBackground，如果想要长时间任务的进度来更新一些UI，
+则调用publishProgress，最后doInBackground的结果会返回给onPostExecute.
+重写完成后，实际使用时调用execute即可
+
+9. 显式intent开启新的activity
+Context context = MainActivity.this;
+Class destinationActivity = ChildActivity.class;
+Intent intent = new Intent(context,destinationActivity);
+startActivity(intent);
+
+manifests中修改内容
+<activity android:name=".DetailActivity"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity"/>
+        </activity>
+
+10. 隐式创建intent
+private void openLocationInMap() {
+        String addressString = "1600 Ampitheatre Parkway, CA";
+        Uri geoLocation = Uri.parse("geo:0,0?q=" + addressString);
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(geoLocation);
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        } else {
+            Log.d(TAG, "Couldn't call " + geoLocation.toString()
+                    + ", no receiving apps installed!");
+        }
+    }
+
+11. 共享隐式intent
+    private Intent createShareForecastIntent() {
+        Intent shareIntent = ShareCompat.IntentBuilder.from(this)
+                .setType("text/plain")
+                .setText(mForecast + FORECAST_SHARE_HASHTAG)
+                .getIntent();
+        return shareIntent;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.detail,menu);
+        MenuItem menuItem = menu.findItem(R.id.action_share);
+        menuItem.setIntent(createShareForecastIntent());
+        return true;
+    }
+
+
+
+
+
+
+

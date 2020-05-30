@@ -1,0 +1,21 @@
+1. android activity 生命周期
+onCreate --> status:Created --> onStart --> status:Visible --> onResume --> status = Active
+
+2. nullColumnHack
+当values参数为空或者里面没有内容的时候，insert是会失败的(底层数据库不允许插入一个空行)，为了防止这种情况，
+要在这里指定一个列名，到时候如果发现将要插入的行为空行时，就会将你指定的这个列名的值设为null，然后再向数据库中插入。
+通过观察源码的insertWithOnConflict方法可以看到当ContentValues类型的数据initialValues为null或size<=0时，
+就会在sql语句中添加nullColumnHack的设置。
+
+
+
+
+
+
+
+
+
+
+
+
+

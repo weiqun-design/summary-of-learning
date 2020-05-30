@@ -1,0 +1,11 @@
+[uwsgi]
+http = :7788
+wsgi-file = app.py
+daemonize = app.log
+callable = app
+pidfile = app.pid
+master = true
+process = 2
+threads = 2
+http-keepalive = 1
+buffer-size = 32768

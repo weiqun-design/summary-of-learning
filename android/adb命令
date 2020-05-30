@@ -1,0 +1,8 @@
+1. adb devices 查看连接设备
+2. adb shell pm list packages 查看所有包名
+3. 可以从manifest查看主activity
+4. pip3 list 可以查看已安装包的版本
+5. 不同的andorid手机使用不同的CPU，不同的CPU支持不同的指令集。CPU与指令集的每种组合都有
+专属的应用二进制接口，即ABI
+6. aapt dump badging  *.apk 可以获得包名和启动activity
+7. lsof -i:40  可以查看指定端口的进程
